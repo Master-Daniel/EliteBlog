@@ -22,7 +22,7 @@ interface BlogProviderProps {
 }
 
 // Algolia Search Client
-const searchClient = algoliasearch('FDOZ5GP4KB', '177bb1e873e24452d6ff75623517e8aa');
+const searchClient = algoliasearch(import.meta.env.VITE_ALGOLIA_APP_ID, import.meta.env.VITE_ALGOLIA_API_KEY);
 const GoogleOAuth: React.FC<{ clientId: string; children: React.ReactNode }> = GoogleOAuthProvider as any;
 
 const BlogProvider: React.FC<BlogProviderProps> = ({ children }) => {
