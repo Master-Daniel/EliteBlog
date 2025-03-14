@@ -3,8 +3,13 @@ import Header from '../components/Header';
 import AuthorCard from '../components/AuthorCard';
 import NewsLetterSection from '../components/NewsLetterSection';
 import Footer from '../components/Footer';
+import useAuthors, { Author } from '../hooks/useAuthors';
 
 const Authors: React.FC = () => {
+    const { data: authors, error, isLoading } = useAuthors();
+
+    // if (isLoading) return <div>Loading...</div>;
+    // if (error) return <div>Error: {error.message}</div>;
     return (
         <>
             <Header />
@@ -16,8 +21,8 @@ const Authors: React.FC = () => {
                     </p>
                 </div>
                 <div className="grid grid-cols-4 gap-16 authors-grid">
-                    {Array.from({ length: 6 }).map((_, index) => (
-                        <AuthorCard author={{ name: 'liva' }} key={index} />
+                    {(authors as Author[])?.map((author, index: number) => (
+                        <AuthorCard author={author} key={index} />
                     ))}
                 </div>
                 <NewsLetterSection />
