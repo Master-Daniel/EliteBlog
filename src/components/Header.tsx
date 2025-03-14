@@ -1,23 +1,51 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
-import { useBlog } from '../hooks/useBlog';
 import SignInModal from './SignInModal';
+
+import { Link } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../redux/store';
+import { setIsModalOpen, setTheme } from '../redux/slices/globalSlice';
 // import SearchBar from './SearchBar';
 
 const Header: React.FC = () => {
-    const { isModalOpen, theme, updateTheme, setIsModalOpen } = useBlog();
+    const { isModalOpen, theme, userData, isLoggedIn } = useSelector((state: RootState) => state.global);
+    const dispatch = useDispatch()
+
+    const updateTheme = (mode: "light" | "dark") => {
+        const htmlElement = document.documentElement;
+        dispatch(setTheme(mode));
+        if (mode === "dark") {
+            htmlElement.classList.add("dark");
+            htmlElement.style.colorScheme = "dark";
+        } else {
+            htmlElement.classList.remove("dark");
+            htmlElement.style.colorScheme = "light";
+        }
+    };
+
     return (
-        <div className="sticky top-0 z-50 shadow-md bg-inherit transition-colors">
-            <header className="py-5 px-5 sm:px-8 flex items-center w-full mb-20">
+        <div className="sticky top-0 z-40 shadow-md bg-white dark:bg-black transition-colors">
+            <header className="py-5 px-5 sm:px-8 flex items-center w-full text-black dark:text-white">
                 <Link to="/" className="font-bold text-lg">EliteBlog</Link>
                 <div className="flex gap-1 ml-auto">
                     <nav>
-                        <ul className="heading-color gap-5 flex hidden lg:flex mr-1">
+                        <ul className="heading-color gap-5 hidden lg:flex mr-1">
                             <li><Link className="nav__link" to="/">Home</Link></li>
-                            <li><Link className="nav__link" to="/web3">Web3</Link></li>
+                            <li><Link className="nav__link" to="#/web3">Web3</Link></li>
+                            <li><Link className="nav__link" to="#/programming">Programming</Link></li>
                             <li><Link className="nav__link" to="/contact">Contact</Link></li>
                             <li><Link className="nav__link" to="/authors">Authors</Link></li>
-                            <li><Link className="nav__link" to="#" onClick={setIsModalOpen}>Signin</Link></li>
+                            {
+                                isLoggedIn ? <li>
+                                    <Link className="nav__link" to="/dashboard">
+                                        <img
+                                            src={userData?.avatarUrl || '/images/avatar.png'}
+                                            alt="User Avatar"
+                                            className="w-8 h-8 rounded-full"
+                                        />
+                                    </Link>
+                                </li> : <li><Link className="nav__link" to="#" onClick={() => dispatch(setIsModalOpen(!isModalOpen))}>Signin</Link></li>
+                            }
                         </ul>
                     </nav>
                     <button className="p-1.5 cursor-pointer" aria-label="Toggle light/dark themes" onClick={() => {
@@ -54,7 +82,7 @@ const Header: React.FC = () => {
                 </div>
             </header>
             {/* Modal */}
-            <SignInModal isOpen={isModalOpen} onClose={setIsModalOpen} />
+            <SignInModal isOpen={isModalOpen} onClose={() => dispatch(setIsModalOpen(!isModalOpen))} />
             {/* <SearchBar /> */}
         </div>
     )
