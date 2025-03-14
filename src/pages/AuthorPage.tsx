@@ -42,7 +42,7 @@ const Author: React.FC = () => {
     return (
         <>
             <Header />
-            <div className="max-w-[1480px] mx-auto px-5 sm:px-8">
+            <div className="max-w-[1480px] mx-auto px-5 sm:px-8 mt-20">
                 <div className="max-w-[450px] text-center mx-auto mb-20">
                     <div className="rounded-full overflow-hidden border-4 border-gray-200 dark:border-gray-700 inline-block leading-[0] author-avatar">
                         <div className="pt-[100%] relative">

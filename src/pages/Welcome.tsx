@@ -75,7 +75,7 @@ const Welcome: React.FC = () => {
     return (
         <>
             <Header />
-            <div className="max-w-[1480px] mx-auto px-5 sm:px-8 z-10">
+            <div className="max-w-[1480px] mx-auto px-5 sm:px-8 z-10 mt-20">
                 <h1 className="text-3xl sm:text-6xl sm:leading-tight max-w-screen-xl font-normal"> <b> This is .....</b> A blog that covers productivity, tips, inspiration, and strategies for massive profits.</h1>
                 <h2 className="mb-4 font-medium text-base uppercase tracking-wider mt-20">Featured Posts</h2>
                 {/* featured section */}
