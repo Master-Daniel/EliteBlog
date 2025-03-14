@@ -1,7 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=YourCustomFont:wght@400;700&display=swap");
 @import "tailwindcss";
-@tailwind base;
-@tailwind components;
+@import "tailwindcss/preflight"
 @tailwind utilities;
 
 @font-face {
@@ -21,6 +20,56 @@
 /* Apply the font globally */
 html {
     font-family: "CustomFont", sans-serif;
+}
+
+a {
+    color: inherit;
+    text-decoration: inherit;
+}
+
+.nav__link {
+    display: block;
+    cursor: pointer;
+    padding: .5rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.dark .btn {
+    --tw-bg-opacity: 1;
+    background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+    --tw-text-opacity: 1;
+    color: rgb(0 0 0 / var(--tw-text-opacity));
+}
+
+.btn {
+    display: inline-block;
+    height: 4rem;
+    border-radius: 9999px;
+    --tw-bg-opacity: 1;
+    background-color: rgb(0 0 0 / var(--tw-bg-opacity));
+    padding: .5rem 2rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    --tw-text-opacity: 1;
+    color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
+.dark .txtInputBasics {
+    --tw-border-opacity: 1;
+    border-color: rgb(107 114 128 / var(--tw-border-opacity));
+}
+
+.txtInputBasics {
+    height: 4rem;
+    border-radius: 9999px;
+    border-width: 1px;
+    --tw-border-opacity: 1;
+    border-color: rgb(209 213 219 / var(--tw-border-opacity));
+    background-color: transparent;
+    padding: .625rem 1.5rem .625rem 2rem;
 }
 
 .authors-grid {
@@ -154,4 +203,27 @@ html {
     height: 100%;
     width: 100%;
     object-fit: cover;
+}
+
+.loading {
+    margin: 16px;
+    animation: rotate360 1s linear infinite;
+    transform: translateZ(0);
+    border-top: 2px solid grey;
+    border-right: 2px solid grey;
+    border-bottom: 2px solid grey;
+    border-left: 4px solid black;
+    background: transparent;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+}
+
+@keyframes rotate360 {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
