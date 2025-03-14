@@ -8,7 +8,7 @@ const Contact: React.FC = () => {
     return (
         <>
             <Header />
-            <div className="max-w-[1480px] mx-auto px-5 sm:px-8 mb-8">
+            <div className="max-w-[1480px] mx-auto px-5 sm:px-8 mb-8 mt-20">
                 <div className="mb-24 text-center max-w-screen-sm mx-auto">
                     <h2 className="text-3xl sm:text-5xl capitalize">Get in Touch</h2>
                     <p className="mt-4 text-lg">Sint eiusmod enim proident irure voluptate aliquip laboris in duis in esse.</p>
@@ -21,7 +21,7 @@ const Contact: React.FC = () => {
                         <input className="w-full txtInputBasics h-16 " id="contact-email" name="contact-email" placeholder="Email" autoComplete="off" autoCapitalize="off" spellCheck="false" type="email" />
                         <label className="sr-only" htmlFor="message">message</label>
                         <textarea className="txtInputBasics !rounded-3xl !h-auto " id="message" name="message" rows={6} placeholder="Message" minLength={10}></textarea>
-                        <button className="btn relative " type="submit"><span className="">Send</span></button>
+                        <button className="btn relative" type="submit"><span className="">Send</span></button>
                     </form>
                     <div>
                         <h3 className="text-2xl mb-6">Contact Info</h3>
