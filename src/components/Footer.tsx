@@ -1,7 +1,19 @@
+import { useQuery } from '@tanstack/react-query';
 import React from 'react'
 import { Link } from 'react-router-dom'
+import axiosInstance from '../api/axiosConfig';
 
 const Footer: React.FC = () => {
+
+    // Fetch categories
+    const { data: categories } = useQuery({
+        queryKey: ["categories"],
+        queryFn: async () => {
+            const response = await axiosInstance.get("/category/fetch-all");
+            return response.data; // Assuming response.data is an array of categories
+        },
+    });
+
     return (
         <div className="max-w-[1480px] mx-auto px-5 sm:px-8 mt-28">
             <div className="grid sm:grid-cols-2 lg:grid-cols-6 gap-12 pt-20 border-t border-gray-100 dark:border-gray-900 pb-24">
@@ -14,7 +26,11 @@ const Footer: React.FC = () => {
                 <div className="lg:col-span-2">
                     <h3 className="uppercase text-sm tracking-wider mb-6">categories</h3>
                     <div>
-                        <div className="flex flex-wrap gap-3"><a className="text-xs font-medium uppercase rounded-full py-1.5 px-2.5 border border-black text-black hover:bg-black hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-black tracking-wide whitespace-nowrap" href="category/mind.html">mind</a><a className="text-xs font-medium uppercase rounded-full py-1.5 px-2.5 border border-black text-black hover:bg-black hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-black tracking-wide whitespace-nowrap" href="category/idea.html">idea</a><a className="text-xs font-medium uppercase rounded-full py-1.5 px-2.5 border border-black text-black hover:bg-black hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-black tracking-wide whitespace-nowrap" href="category/dream.html">dream</a><a className="text-xs font-medium uppercase rounded-full py-1.5 px-2.5 border border-black text-black hover:bg-black hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-black tracking-wide whitespace-nowrap" href="category/fun.html">fun</a><a className="text-xs font-medium uppercase rounded-full py-1.5 px-2.5 border border-black text-black hover:bg-black hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-black tracking-wide whitespace-nowrap" href="category/productivity.html">productivity</a><a className="text-xs font-medium uppercase rounded-full py-1.5 px-2.5 border border-black text-black hover:bg-black hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-black tracking-wide whitespace-nowrap" href="category/inspirational.html">inspirational</a><a className="text-xs font-medium uppercase rounded-full py-1.5 px-2.5 border border-black text-black hover:bg-black hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-black tracking-wide whitespace-nowrap" href="category/modern.html">modern</a><a className="text-xs font-medium uppercase rounded-full py-1.5 px-2.5 border border-black text-black hover:bg-black hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-black tracking-wide whitespace-nowrap" href="category/life%20lessons.html">life lessons</a><a className="text-xs font-medium uppercase rounded-full py-1.5 px-2.5 border border-black text-black hover:bg-black hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-black tracking-wide whitespace-nowrap" href="category/goals.html">goals</a></div>
+                        <div className="flex flex-wrap gap-3">
+                            {categories && categories.map((category: { name: string }, index: number) => (
+                                <Link key={index} className="text-xs font-medium uppercase rounded-full py-1.5 px-2.5 border border-black text-black hover:bg-black hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-black tracking-wide whitespace-nowrap" to={`feeds/category/${category.name.toLocaleLowerCase()}`}>{category.name}</Link>
+                            ))}
+                        </div>
                     </div>
                 </div>
                 <div className="">
@@ -49,7 +65,7 @@ const Footer: React.FC = () => {
                     </div>
                 </div>
             </div>
-            <div className="py-6 text-sm text-center uppercase tracking-wide">© { new Date().getFullYear() } EliteCodec Inc. All rights reserved.</div>
+            <div className="py-6 text-sm text-center uppercase tracking-wide">© {new Date().getFullYear()} EliteCodec Inc. All rights reserved.</div>
         </div>
     )
 }
