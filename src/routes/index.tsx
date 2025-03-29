@@ -13,6 +13,7 @@ import CommentManagementPage from "../pages/dashboard/CommentManagement";
 import GeneralSettingsPage from "../pages/dashboard/GeneralSettings";
 import AdminLayout from "../pages/dashboard/AdminLayout";
 import AdminPostApprovalPage from "../pages/dashboard/AdminPostApproval";
+import FeedBody from "../pages/FeedBody";
 
 const routes = createBrowserRouter([
     {
@@ -20,8 +21,9 @@ const routes = createBrowserRouter([
         children: [
             { index: true, element: <Welcome /> },
             { path: 'authors', element: <Authors /> },
-            { path: 'author/:name', element: <Author /> },
+            { path: 'author/:id', element: <Author /> },
             { path: 'contact', element: <Contact /> },
+            { path: 'feed/:slug', element: <FeedBody />},
             { path: '/auth/github/callback', element: <Welcome /> },
             {
                 path: 'dashboard',

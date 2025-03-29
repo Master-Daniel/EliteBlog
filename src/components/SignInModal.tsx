@@ -77,6 +77,7 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => {
             if (event.data && event.data.user) {
                 const { user } = event.data.user
                 const { token, ...userData } = user;
+                console.log(user)
                 setCookie('elite-blog-token', token, 1440);
                 dispatch(setUserData(userData))
                 dispatch(setIsLoggedIn(true))

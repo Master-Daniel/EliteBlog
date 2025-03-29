@@ -28,7 +28,7 @@ const Footer: React.FC = () => {
                     <div>
                         <div className="flex flex-wrap gap-3">
                             {categories && categories.map((category: { name: string }, index: number) => (
-                                <Link key={index} className="text-xs font-medium uppercase rounded-full py-1.5 px-2.5 border border-black text-black hover:bg-black hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-black tracking-wide whitespace-nowrap" to={`feeds/category/${category.name.toLocaleLowerCase()}`}>{category.name}</Link>
+                                <Link key={index} className="text-xs font-medium uppercase rounded-full py-1.5 px-2.5 border border-black text-black hover:bg-black hover:text-white dark:border-white dark:text-white dark:hover:bg-white dark:hover:text-black tracking-wide whitespace-nowrap" to={`feeds/category/${category.name.toLowerCase()}`}>{category.name}</Link>
                             ))}
                         </div>
                     </div>

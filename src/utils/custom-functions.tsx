@@ -28,3 +28,12 @@ export const decryptStr = (code: string) => {
     }
     return value;
 };
+
+export const formatDate = (dateString?: string) => {
+    if (!dateString) return undefined;
+    return new Date(dateString).toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+    });
+};

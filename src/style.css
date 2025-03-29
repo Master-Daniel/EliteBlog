@@ -1,7 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=YourCustomFont:wght@400;700&display=swap");
 @import "tailwindcss";
 @import "tailwindcss/preflight"
-@tailwind utilities;
 
 @font-face {
     font-family: "CustomFont";
@@ -183,6 +182,15 @@ a {
     margin-top: 1rem;
 }
 
+.post-image {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    left: 0;
+    top: 0;
+    object-fit: cover;
+}
+
 .author-container {
     display: flex;
     gap: 0.5rem;
@@ -219,10 +227,23 @@ a {
     border-radius: 50%;
 }
 
+.feed-featured-image {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    object-fit: cover;
+    color: transparent
+}
+
 @keyframes rotate360 {
     from {
         transform: rotate(0deg);
     }
+
     to {
         transform: rotate(360deg);
     }

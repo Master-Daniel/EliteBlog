@@ -110,22 +110,27 @@ const CreatePost: React.FC = () => {
     });
 
     return (
-        <div className="flex h-screen overflow-hidden">
-            <SideBar />
-            <div className="flex flex-col flex-1 min-h-0">
-                <Header />
-                <div className="flex-1 p-4 md:p-6 overflow-y-auto">
+        <>
+            <Header />
+            <div className="flex p-4 md:p-6 overflow-y-auto">
+                {/* Sidebar with fixed width */}
+                <div className="min-w-[270px]">
+                    <SideBar />
+                </div>
+
+                {/* Content with proper spacing */}
+                <div className="flex-1 space-y-6">
                     <h1 className="text-2xl font-bold mb-4">Create Post</h1>
 
                     <Formik
                         initialValues={initialValues}
                         validationSchema={validationSchema}
                         onSubmit={(values, { resetForm }) => {
-                            values.user_id = userData?.id as string
+                            values.user_id = userData?.id as string;
                             handleSubmit.mutate(values, {
                                 onSuccess: () => {
                                     toast.success("Post submitted successfully!");
-                                    resetForm()
+                                    resetForm();
                                     contentRef.current?.reset();
                                 },
                             });
@@ -133,55 +138,56 @@ const CreatePost: React.FC = () => {
                     >
                         {({ setFieldValue, values }) => (
                             <Form className="space-y-6">
-                                {/* Title and Slug */}
                                 <FormField
                                     label="Title"
                                     name="title"
                                     placeholder="Enter your post title"
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                         const titleValue = e.target.value;
-                                        const slug = titleValue.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+                                        const slug = titleValue
+                                            .toLowerCase()
+                                            .replace(/\s+/g, "-")
+                                            .replace(/[^a-z0-9-]/g, "");
                                         setFieldValue("title", titleValue);
                                         setFieldValue("slug", slug);
-                                        setFieldValue("canonicalUrl", `https://elitecodec.com.ng/feed/${slug}`);
+                                        setFieldValue(
+                                            "canonicalUrl",
+                                            `https://elitecodec.com.ng/feed/${slug}`
+                                        );
                                     }}
                                 />
                                 <FormField label="Slug / URL" name="slug" placeholder="e.g. my-awesome-post" />
-
-                                {/* Canonical URL */}
                                 <FormField label="Canonical URL" name="canonicalUrl" placeholder="https://yourdomain.com/my-post" />
-
-                                {/* Meta Description */}
                                 <TextAreaField label="Meta Description" name="description" value={values.description} />
 
-                                {/* Keywords and Tags */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <KeywordInputField label="Keywords" name="keywords" />
                                     <KeywordInputField label="Tags" name="tags" />
                                 </div>
 
-                                {/* Category Selection */}
                                 <CategorySelect name="category" categories={categories} />
 
-                                {/* Real-time Search Snippet Preview */}
                                 <div className="p-4 border border-dashed border-gray-400 rounded-md">
                                     <p className="text-sm text-gray-500">Search Result Preview:</p>
-                                    <h2 className="text-lg font-semibold text-blue-600">{values.title || "Post Title"}</h2>
-                                    <p className="text-sm text-gray-700">{values.description || "Meta description will appear here..."}</p>
-                                    <p className="text-xs text-gray-500">{values.canonicalUrl ? `${values.canonicalUrl}` : "https://yourdomain.com/your-post"}</p>
+                                    <h2 className="text-lg font-semibold text-blue-600">
+                                        {values.title || "Post Title"}
+                                    </h2>
+                                    <p className="text-sm text-gray-700">
+                                        {values.description || "Meta description will appear here..."}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                        {values.canonicalUrl || "https://yourdomain.com/your-post"}
+                                    </p>
                                 </div>
 
-                                {/* Rich Text Editor */}
                                 <div className="space-y-2">
                                     <label className="block font-medium">Content</label>
                                     <TextEditor ref={contentRef} onChange={(content) => setFieldValue("content", content)} />
                                     <ErrorMessage name="content" component="div" className="text-red-500 text-sm" />
                                 </div>
 
-                                {/* Featured Image Upload */}
                                 <FileUploadField name="featuredImage" label="Featured Image" setFieldValue={setFieldValue} />
 
-                                {/* Publishing Options */}
                                 <RadioGroupField
                                     label="Publishing Options"
                                     name="status"
@@ -191,13 +197,14 @@ const CreatePost: React.FC = () => {
                                     ]}
                                 />
 
-                                {/* SEO Analysis Placeholder */}
                                 <div className="p-4 border border-dashed border-green-400 rounded-md">
                                     <p className="text-sm text-green-700">SEO Analysis and suggestions will appear here.</p>
                                 </div>
 
-                                {/* Submit Button */}
-                                <button type="submit" className="cursor-pointer w-full py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700">
+                                <button
+                                    type="submit"
+                                    className="cursor-pointer w-full py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700"
+                                >
                                     {values.status === "draft" ? "Save Draft" : "Publish Post"}
                                 </button>
                             </Form>
@@ -205,7 +212,7 @@ const CreatePost: React.FC = () => {
                     </Formik>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 
