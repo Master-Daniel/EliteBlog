@@ -23,5 +23,5 @@
     "noUncheckedSideEffectImports": true,
     "forceConsistentCasingInFileNames": true,
   },
-  "include": ["src", "public/js"]
+  "include": ["src", "public/js", "generateSitemap.js"]
 }
