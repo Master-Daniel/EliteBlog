@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useImperativeHandle, forwardRef, useRef } from "react";
-import { Editor } from "@tinymce/tinymce-react";
+import { Editor } from "../../vendor/tinymce/tinymce-react";
 
 // Type for fetchEventSource (you can improve this with proper types if available)
 type FetchEventSource = (url: string, options: unknown) => Promise<Response>;
