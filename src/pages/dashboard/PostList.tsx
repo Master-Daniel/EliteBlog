@@ -4,20 +4,32 @@ import SideBar from "../../components/dashboard/SideBar";
 import Header from "../../components/Header";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { Card, CardContent } from "@mui/material";
+import axiosInstance from "../../api/axiosConfig";
+import { useQuery } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
+import { RootState } from "../../redux/store";
+import DataTableLoader from "../../components/DataTableLoader";
 
 interface Post {
     id: number;
     title: string;
-    category: string;
+    category: { id: string };
     status: "Published" | "Draft";
 }
 
 const PostListPage: React.FC = () => {
-    const [posts, setPosts] = useState<Post[]>([
-        { id: 1, title: "React Guide", category: "Technology", status: "Published" },
-        { id: 2, title: "Business Strategies", category: "Business", status: "Draft" },
-        { id: 3, title: "Healthy Lifestyle", category: "Health", status: "Published" },
-    ]);
+    const [posts, setPosts] = useState<Post[]>([]);
+    const { userData } = useSelector((state: RootState) => state.global);
+
+    // Fetch feeds
+    const { data: feeds, isLoading } = useQuery({
+        queryKey: ["feeds"],
+        queryFn: async () => {
+            const response = await axiosInstance.get(`/feed/fetch-all/${userData?.id}`);
+            return response.data; // Assuming response.data is an array of categories
+        },
+    });
 
     const deletePost = (id: number) => {
         setPosts(posts.filter(post => post.id !== id));
@@ -31,7 +43,7 @@ const PostListPage: React.FC = () => {
         },
         {
             name: "Category",
-            selector: (row) => row.category,
+            selector: (row) => row.category.id,
             sortable: true,
         },
         {
@@ -66,14 +78,21 @@ const PostListPage: React.FC = () => {
                 <Header />
                 <div className="flex-1 p-4 md:p-6 overflow-y-auto">
                     <h1 className="text-2xl font-bold mb-6">Post List</h1>
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                        <DataTable
-                            columns={columns}
-                            data={posts}
-                            pagination
-                            highlightOnHover
-                            responsive
-                        />
+                    <div className="rounded-lg shadow-md">
+                        <Card>
+                            <CardContent>
+                                {isLoading ? <DataTableLoader text="" />
+                                    :
+                                    <DataTable
+                                        columns={columns}
+                                        data={feeds}
+                                        pagination
+                                        highlightOnHover
+                                        responsive
+                                    />
+                                }
+                            </CardContent>
+                        </Card>
                     </div>
                 </div>
             </div>

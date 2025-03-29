@@ -3,41 +3,24 @@ import Header from '../components/Header';
 import PostCard from '../components/PostCard';
 import NewsLetterSection from '../components/NewsLetterSection';
 import Footer from '../components/Footer';
+import { useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import axiosInstance from '../api/axiosConfig';
 
 const Author: React.FC = () => {
+    const params = useParams();
 
-    const posts = [
-        {
-            title: 'The chief enemy of creativity is good sense',
-            slug: 'the-chief-enemy-of-creativity-is-good-sense',
-            thumbnail: '/images/creativity.jpg',
-            category: 'mind',
-            date: 'Oct 28, 2022',
-            readTime: '3 min read',
-            author: [
-                { name: 'Catherine Ryan', link: 'catherine', avatar: '/images/catherine.jpg' },
-                { name: 'Dina Jerrie', link: 'dina', avatar: '/images/dina.jpg' }
-            ]
+    const { data: author, isLoading, isError } = useQuery({
+        queryKey: ['author', params.id], // 🔥 Use params.id as dependency
+        queryFn: async () => {
+            const response = await axiosInstance.get(`/user/${params.id}`);
+            return response.data;
         },
-        {
-            title: 'Exploring the Depths of Innovation',
-            slug: 'exploring-the-depths-of-innovation',
-            thumbnail: '/images/innovation.jpg',
-            category: 'tech',
-            date: 'Nov 10, 2023',
-            readTime: '5 min read',
-            author: [{ name: 'John Doe', link: 'john', avatar: '/images/john.jpg' }]
-        },
-        {
-            title: 'The Future of AI and Creativity',
-            slug: 'the-future-of-ai-and-creativity',
-            thumbnail: '/images/ai.jpg',
-            category: 'AI',
-            date: 'Dec 15, 2023',
-            readTime: '7 min read',
-            author: [{ name: 'Sarah Smith', link: 'sarah', avatar: '/images/sarah.jpg' }]
-        }
-    ];
+        enabled: !!params.id, // 🔥 Prevents unnecessary API calls when params.id is undefined
+    });
+
+    if (isLoading) return <div className="text-center mt-20">Loading...</div>;
+    if (isError) return <div className="text-center mt-20 text-red-500">Error loading author data.</div>;
 
     return (
         <>
@@ -47,25 +30,22 @@ const Author: React.FC = () => {
                     <div className="rounded-full overflow-hidden border-4 border-gray-200 dark:border-gray-700 inline-block leading-[0] author-avatar">
                         <div className="pt-[100%] relative">
                             <img
-                                alt="author avatar"
+                                alt={author?.user?.name || 'Author'}
                                 sizes="160px"
-                                srcSet="/images/prince.jpg"
-                                src="/images/prince.jpg"
+                                srcSet={author?.user?.avatarUrl || '/default-avatar.png'}
+                                src={author?.user?.avatarUrl || '/default-avatar.png'}
                                 decoding="async"
                                 data-nimg="fill"
                                 loading="lazy"
                             />
                         </div>
                     </div>
-                    <h3 className="text-3xl my-3">Livia Brendan</h3>
-                    <div className="mb-3">1 Posts</div>
-                    <p>
-                        Vivamus erat nibh, iaculis et imperdiet in, luctus vitae felis. Sed tincidunt hendrerit metus, sit amet molestie urna vestibulum sed.
-                        Praesent accumsan leo at facilisis elementum.
-                    </p>
+                    <h3 className="text-3xl my-3">{author?.user?.name || 'Unknown Author'}</h3>
+                    <div className="mb-3">{author?.user?.feeds?.length || 0} Posts</div>
+                    {/* <p>{author?.user?.bio}</p> */}
                 </div>
                 <div className="grid gap-10 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                    {posts.map((post, index) => (
+                    {author?.user?.feeds?.map((post, index) => (
                         <PostCard post={post} key={index} />
                     ))}
                 </div>

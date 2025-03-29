@@ -1,22 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
-interface UserData {
-    id?: string;
-    name?: string;
-    username?: string;
-    email?: string;
-    avatarUrl?: string;
-    role?: string;
-    isLoggedIn?: boolean;
-}
-
-interface GlobalState {
-    isLoggedIn: boolean;
-    isSidebarOpen: boolean;
-    theme: string;
-    userData?: UserData;
-    isModalOpen: boolean;
-}
+import { Feed, GlobalState, UserData } from "../../utils/types";
 
 const initialState: GlobalState = {
     isLoggedIn: false,
@@ -41,11 +24,14 @@ const globalSlice = createSlice({
         setUserData: (state, action: PayloadAction<Partial<UserData>>) => {
             state.userData = { ...state.userData, ...action.payload }
         },
+        setFeeds: (state, action: PayloadAction<Feed[]>) => {
+            state.feeds = action.payload;
+        },
         setTheme: (state, action: PayloadAction<string>) => {
             state.theme = action.payload
         }
     }
 });
 
-export const { setIsLoggedIn, setIsModalOpen, setTheme, setUserData, setIsSidebarOpen } = globalSlice.actions;
+export const { setIsLoggedIn, setIsModalOpen, setTheme, setUserData, setIsSidebarOpen, setFeeds } = globalSlice.actions;
 export default globalSlice.reducer;
