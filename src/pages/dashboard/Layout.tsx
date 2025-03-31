@@ -1,24 +1,16 @@
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useState } from "react";
+import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
-import { setIsModalOpen } from "../../redux/slices/globalSlice";
 import { Outlet } from "react-router-dom";
 import SignInModal from "../../components/SignInModal";
 
 const Layout: React.FC = () => {
-  const { isLoggedIn, isModalOpen } = useSelector((state: RootState) => state.global);
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    // When not logged in, ensure the modal is open.
-    if (!isLoggedIn && !isModalOpen) {
-      dispatch(setIsModalOpen(true));
-    }
-  }, [isLoggedIn, isModalOpen, dispatch]);
+  const { isLoggedIn } = useSelector((state: RootState) => state.global);
+  const [isAuthModal, setIsAuthModal] = useState<boolean>(false)
 
   if (!isLoggedIn) {
     // Render the modal, or any fallback component, while the user is not logged in.
-    return <SignInModal isOpen={isModalOpen} onClose={() => dispatch(setIsModalOpen(false))} />;
+    return <SignInModal isOpen={isAuthModal} onClose={() => setIsAuthModal(false)} />;
   }
 
   return <Outlet />;
