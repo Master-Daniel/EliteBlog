@@ -1,13 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useImperativeHandle, forwardRef, useRef } from "react";
 import { Editor } from "../../vendor/tinymce/tinymce-react";
+import { fetchEventSource, EventSourceMessage } from "@microsoft/fetch-event-source";
 
-// Type for fetchEventSource (you can improve this with proper types if available)
-type FetchEventSource = (url: string, options: unknown) => Promise<Response>;
-
-const fetchApi: Promise<FetchEventSource> = import(
-    "https://unpkg.com/@microsoft/fetch-event-source@2.0.1/lib/esm/index.js"
-).then((module) => module.fetchEventSource);
+const fetchApi = Promise.resolve(fetchEventSource);
 
 const openai_api_key: string = import.meta.env.VITE_OPEN_AI_KEY as string;
 
@@ -140,7 +136,7 @@ const TextEditor = forwardRef(({ onChange }: TextEditorProps, ref) => {
                             }
                         };
 
-                        const onmessage = (ev: MessageEvent): void => {
+                        const onmessage = (ev: EventSourceMessage): void => {
                             const data = ev.data;
                             if (data !== "[DONE]") {
                                 const parsedData = JSON.parse(data);
@@ -166,19 +162,11 @@ const TextEditor = forwardRef(({ onChange }: TextEditorProps, ref) => {
                                     ...openAiOptions,
                                     openWhenHidden: true,
                                     onopen,
-                                    onmessage,
+                                    onmessage, // Fixed type
                                     onerror,
                                 })
                             )
-                            .then(async (response: Response) => {
-                                if (response && !response.ok) {
-                                    const data = await response.json();
-                                    if (data.error) {
-                                        throw new Error(`${data.error.type}: ${data.error.message}`);
-                                    }
-                                }
-                            })
-                            .catch(onerror);
+                            .catch(onerror); // Ensure errors are caught
                     });
                 },
                 quickbars_selection_toolbar: 'bold italic | quicklink h2 h3 blockquote quickimage quicktable',
