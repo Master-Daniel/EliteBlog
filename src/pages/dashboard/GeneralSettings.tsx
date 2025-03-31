@@ -74,7 +74,7 @@ const GeneralSettingsPage: React.FC = () => {
                             validationSchema={validationSchema}
                             onSubmit={handleSubmit}
                         >
-                            {({ setFieldValue, values }) => (
+                            {({ setFieldValue, }) => (
                                 <Form className="space-y-4">
                                     {/* Site Name */}
                                     <div>
@@ -102,6 +102,7 @@ const GeneralSettingsPage: React.FC = () => {
                                     <div>
                                         <label className="block font-medium">Site Logo</label>
                                         <input
+                                            aria-label="file"
                                             type="file"
                                             onChange={(event) => setFieldValue("siteLogo", event.target.files?.[0] || null)}
                                             className="w-full p-2 border border-gray-300 rounded-md"
