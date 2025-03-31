@@ -29,6 +29,5 @@ export interface GlobalState {
     feeds?: {
         featured: Feed[];
         feeds: Feed[];
-    }; 
-    isModalOpen: boolean;
+    };
 }
