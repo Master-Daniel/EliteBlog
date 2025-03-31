@@ -76,9 +76,9 @@ const Header: React.FC = () => {
                                 <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
                             </svg>
                         ) : (
-                            <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" className="w-5 h-auto" xmlns="http://www.w3.org/2000/svg">
-                                <path fill="none" d="M0 0h24v24H0V0z" />
-                                <path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79zM1 10.5h3v2H1zM11 .55h2V3.5h-2zM8.04 2.495l1.408 1.407-1.79 1.79-1.407-1.408zM6.24 18.64l1.79 1.8 1.41-1.41-1.8-1.79zM20 10.5h3v2h-3zM12 5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zM12 15c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zM11 19h2v2.95h-2zM3.55 18.04l1.41 1.41 1.79-1.8-1.41-1.41z" />
+                            <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" className="w-5 h-auto" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                <path fill="none" d="M0 0h24v24H0V0z"></path>
+                                <path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79zM1 10.5h3v2H1zM11 .55h2V3.5h-2zm8.04 2.495l1.408 1.407-1.79 1.79-1.407-1.408zm-1.8 15.115l1.79 1.8 1.41-1.41-1.8-1.79zM20 10.5h3v2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm-1 4h2v2.95h-2zm-7.45-.96l1.41 1.41 1.79-1.8-1.41-1.41z"></path>
                             </svg>
                         )}
                     </button>
@@ -120,13 +120,13 @@ const Header: React.FC = () => {
                             </ul>
                         )}
                         <button className={`p-1.5 cursor-pointer ${isMobileNavOpen && 'hidden'}`} aria-label="Nav" onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}>
-                            <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16" className="w-5 h-auto" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                            <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 16 16" className="w-5 h-auto" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M16 5H0V4h16v1zm0 8H0v-1h16v1zm0-4.008H0V8h16v.992z"></path>
                             </svg>
                         </button>
                         <button className={`p-1.5 cursor-pointer ${!isMobileNavOpen && 'hidden'}`} aria-label="Nav" onClick={() => setIsMobileNavOpen(!isMobileNavOpen)}>
-                            <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16" className="w-5 h-auto" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M7.116 8l-4.558 4.558.884.884L8 8.884l4.558 4.558.884-.884L8.884 8l4.558-4.558-.884-.884L8 7.116 3.442 2.558l-.884.884L7.116 8z"></path>
+                            <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 16 16" className="w-5 h-auto" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                <path fillRule="evenodd" clipRule="evenodd" d="M7.116 8l-4.558 4.558.884.884L8 8.884l4.558 4.558.884-.884L8.884 8l4.558-4.558-.884-.884L8 7.116 3.442 2.558l-.884.884L7.116 8z"></path>
                             </svg>
                         </button>
                     </nav>
