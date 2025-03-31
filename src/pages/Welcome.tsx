@@ -12,6 +12,7 @@ import { Feed } from "../utils/types";
 import { setFeeds } from "../redux/slices/globalSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/store";
+import Meta from "../components/Meta";
 
 const Welcome: React.FC = () => {
 
@@ -27,10 +28,10 @@ const Welcome: React.FC = () => {
             return response?.data ?? feeds;
         },
     });
-    
+
     // Destructure `feeds` and `featured`
     const { feeds = [], featured = [] } = data || {};
-    
+
     // Fetch the actual featured posts from their IDs
     const { data: featuredPosts } = useQuery({
         queryKey: ["featured", featured],
@@ -41,25 +42,35 @@ const Welcome: React.FC = () => {
         },
         enabled: featured.length > 0, // Only run if there are featured post IDs
     });
-    
+
     // Remove featured posts from `feeds`
     const filteredFeeds = feeds.filter((feed: Feed) => !featured.includes(feed.id));
 
+    const meta = {
+        noIndex: false,
+        title: 'Welcome',
+        description: 'This is EliteBlog a blog that covers productivity, tips, inspiration, and strategies for massive profits.',
+    }
+
     return (
         <>
+            <Meta meta={meta} />
             <Header />
-            <div className="max-w-[1480px] mx-auto px-5 sm:px-8 z-10 mt-20">
+            <div className="max-w-[1480px] mx-auto px-5 sm:px-8 z-10 mt-20 text-black dark:text-white">
                 <h1 className="text-3xl sm:text-6xl sm:leading-tight max-w-screen-xl font-normal">
-                    {" "}
-                    <b> This is .....</b> A blog that covers productivity, tips, inspiration, and strategies for massive profits.
+                    <b> This is EliteBlog</b> a blog that covers productivity, tips, inspiration, and strategies for massive profits.
                 </h1>
                 {featuredPosts && <h2 className="mb-4 font-medium text-base uppercase tracking-wider mt-20">Featured Posts</h2>}
                 <FeaturedSection feeds={featuredPosts} />
-                <h2 className="mb-4 font-medium text-base uppercase tracking-wider mt-32">Latest Posts</h2>
-                <div className="grid gap-10 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                    {filteredFeeds ? filteredFeeds.slice(0, 6).map((feed: Feed, index: number) => <PostCard post={feed} key={index} />) : <div className="text-center">No Post Yet</div>}
-                </div>
-                <Pagination currentPage={1} totalPages={Math.ceil(feeds?.length / 6)} />
+                {filteredFeeds?.length > 0 ? (
+                    <>
+                        <h2 className="mb-4 font-medium text-base uppercase tracking-wider mt-32">Latest Posts</h2>
+                        <div className="grid gap-10 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                            {filteredFeeds.slice(0, 6).map((feed: Feed, index: number) => <PostCard post={feed} key={index} />)}
+                        </div>
+                    </>
+                ) : <div className="text-center text-2xl font-bold p-12">No Post Yet</div>}
+                {filteredFeeds?.length > 0 && <Pagination currentPage={1} totalPages={Math.ceil(feeds?.length / 6)} />}
             </div>
             <NewsLetterSection />
             <Footer />
