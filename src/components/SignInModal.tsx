@@ -106,7 +106,7 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => {
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black/50 dark:bg-white/20 backdrop-blur-sm z-50" onClick={onClose}>
             <div
-                className="bg-black dark:bg-gray-900 p-6 sm:p-8 rounded-xl shadow-2xl w-[95%] max-w-md relative transition-transform transform scale-100"
+                className="bg-white dark:bg-black p-6 sm:p-8 rounded-xl shadow-2xl w-[95%] max-w-md relative transition-transform transform scale-100"
                 onClick={(e) => e.stopPropagation()} // Prevent modal close when clicking inside
             >
                 <h2 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-white">
@@ -116,7 +116,7 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => {
                 <div className="space-y-4">
                     <button
                         onClick={() => handleGoogleLogin()}
-                        className="w-full cursor-pointer py-3 flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition focus:ring-2 focus:ring-red-400"
+                        className="w-full cursor-pointer py-3 flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition focus:ring-2 focus:ring-red-400 !important"
                     >
                         <svg
                             role="img"
@@ -166,17 +166,9 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => {
                         Sign in with Twitter
                     </button>
                     <button className="w-full cursor-pointer py-3 flex items-center justify-center gap-3 bg-blue-800 hover:bg-blue-900 text-white font-medium rounded-lg transition focus:ring-2 focus:ring-blue-600">
-                        <svg
-                            role="img"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-5 h-5"
-                        >
+                        <svg stroke="currentColor" role="img" fill="currentColor" className="w-5 h-5" strokeWidth="0" viewBox="0 0 448 512" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                             <title>LinkedIn</title>
-                            <path
-                                fill="currentColor"
-                                d="M4.98 3.5c0 1.38-1.11 2.5-2.48 2.5S0 4.88 0 3.5 1.11 1 2.48 1 4.98 2.12 4.98 3.5zm.02 4H0v16h5V7.5h-.02zM8 7.5v16h5v-8.6c0-4.2-2.2-6.5-5.3-6.5-2.1 0-3.7 1.2-4.3 2.3V7.5H8z"
-                            />
+                            <path d="M100.28 448H7.4V148.9h92.88zM53.79 108.1C24.09 108.1 0 83.5 0 53.8a53.79 53.79 0 0 1 107.58 0c0 29.7-24.1 54.3-53.79 54.3zM447.9 448h-92.68V302.4c0-34.7-.7-79.2-48.29-79.2-48.29 0-55.69 37.7-55.69 76.7V448h-92.78V148.9h89.08v40.8h1.3c12.4-23.5 42.69-48.3 87.88-48.3 94 0 111.28 61.9 111.28 142.3V448z"></path>
                         </svg>
                         Sign in with LinkedIn
                     </button>
