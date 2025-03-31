@@ -34,7 +34,6 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             </div>
             <h2 className="text-2xl font-bold mt-4 leading-snug">
                 <Link to={`/feed/${post.slug}`}>{post.title}</Link>
-                <Link to={`/feed/${post.slug}`}>{post.title}</Link>
             </h2>
             <p className="mt-4">{post.description}</p>
             <div className="flex gap-2 items-center mt-6">
@@ -52,24 +51,8 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
                             </div>
                         </div>
                     </Link>
-                    <Link className="flex -ml-3 first:ml-0 first:z-10 hover:z-20" to={post.author.id}>
-                        <div className="rounded-full overflow-hidden border-4 h-[30px] w-[30px] border-gray-200 dark:border-gray-700 inline-block leading-[0]">
-                            <div className="pt-[100%] relative">
-                                <img
-                                    alt={post.author.name}
-                                    src={post.author.avatarUrl}
-                                    decoding="async"
-                                    loading="lazy"
-                                    className='post-image'
-                                />
-                            </div>
-                        </div>
-                    </Link>
                 </div>
                 <div>
-                    <Link className="text-sm font-medium heading-color block" to={`/author/${post.author.id}`}>
-                        {post.author.name}
-                    </Link>
                     <Link className="text-sm font-medium heading-color block" to={`/author/${post.author.id}`}>
                         {post.author.name}
                     </Link>
