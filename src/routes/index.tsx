@@ -14,6 +14,7 @@ import GeneralSettingsPage from "../pages/dashboard/GeneralSettings";
 import AdminLayout from "../pages/dashboard/AdminLayout";
 import AdminPostApprovalPage from "../pages/dashboard/AdminPostApproval";
 import FeedBody from "../pages/FeedBody";
+import NotFound from "../pages/NotFound";
 
 const routes = createBrowserRouter([
     {
@@ -43,8 +44,8 @@ const routes = createBrowserRouter([
                         ]
                     },
                 ]
-            }
-            // { path: "*", element: <NotFound /> }, // Catch-all for unknown routes
+            },
+            { path: "*", element: <NotFound /> },
         ],
     },
 ]);
