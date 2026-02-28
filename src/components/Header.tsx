@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { setTheme } from "../redux/slices/globalSlice";
@@ -8,8 +8,10 @@ import SearchBar from "./SearchBar";
 
 const NAV_ITEMS = [
     { name: "Home", path: "/" },
-    { name: "Web3", path: "#/web3" },
-    { name: "Programming", path: "#/programming" },
+    { name: "Business", path: "/feed/category/business" },
+    { name: "Programming", path: "/feed/category/programming" },
+    { name: "Web3", path: "/feed/category/web3" },
+    { name: "Life Style", path: "/feed/category/life%20style" },
     { name: "Contact", path: "/contact" },
     { name: "Authors", path: "/authors" },
 ];
@@ -17,10 +19,13 @@ const NAV_ITEMS = [
 const Header: React.FC = () => {
     const { theme, userData, isLoggedIn } = useSelector((state: RootState) => state.global);
     const dispatch = useDispatch();
+    const location = useLocation();
 
     const [isAuthModal, setIsAuthModal] = useState(false);
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
     const [isSearchBarOpen, setIsSearchBarOpen] = useState(false);
+
+    const isDashboard = location.pathname.startsWith("/dashboard");
 
     const toggleState = (setter: React.Dispatch<React.SetStateAction<boolean>>) => setter((prev) => !prev);
 
@@ -60,7 +65,7 @@ const Header: React.FC = () => {
                                 </li>
                             ) : (
                                 <li>
-                                    <button className="nav__link" onClick={() => toggleState(setIsAuthModal)}>
+                                    <button className="cursor-pointer nav__link" onClick={() => toggleState(setIsAuthModal)}>
                                         Signin
                                     </button>
                                 </li>
@@ -83,12 +88,14 @@ const Header: React.FC = () => {
                         )}
                     </button>
 
-                    {/* Search Button */}
-                    <button className="p-1.5 cursor-pointer" aria-label="Search" onClick={() => toggleState(setIsSearchBarOpen)}>
-                        <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" className="w-5 h-auto" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z" />
-                        </svg>
-                    </button>
+                    {/* Search Button - Hidden on Dashboard */}
+                    {!isDashboard && (
+                        <button className="p-1.5 cursor-pointer" aria-label="Search" onClick={() => toggleState(setIsSearchBarOpen)}>
+                            <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 24 24" className="w-5 h-auto" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z" />
+                            </svg>
+                        </button>
+                    )}
 
                     {/* Mobile Navigation */}
                     <nav className="lg:hidden relative">
@@ -109,7 +116,7 @@ const Header: React.FC = () => {
                                     </li>
                                 ) : (
                                     <li>
-                                        <button className="nav__link" onClick={() => {
+                                        <button className="cursor-pointer nav__link" onClick={() => {
                                             toggleState(setIsAuthModal)
                                             setIsMobileNavOpen(!isMobileNavOpen)
                                         }}>
