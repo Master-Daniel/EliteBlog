@@ -32,7 +32,7 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ feeds }) => {
                 <div key={feed.id} className="basis-full xl:basis-[65%] shrink-0">
                     <Link className="block" to={feed.slug}>
                         <div className="block relative pt-[75%] bg-black/5 dark:bg-white/5">
-                            <img alt="Post thumbnail" src={`${import.meta.env.VITE_API_URL}/feeds/${feed.featuredImage}`} className="absolute inset-0 w-full h-full object-cover" />
+                            <img alt="Post thumbnail" src={`${import.meta.env.VITE_API_URL}/uploads/feeds/${feed.featuredImage}`} className="absolute inset-0 w-full h-full object-cover" />
                         </div>
                     </Link>
                     <div className="flex flex-wrap gap-3 items-center mt-8">
@@ -66,7 +66,7 @@ const FeaturedSection: React.FC<FeaturedSectionProps> = ({ feeds }) => {
                     <div key={feed.id} className="flex gap-5">
                         <Link className="block shrink-0 basis-[30%]" to={feed.slug}>
                             <div className="block relative pt-[75%] bg-black/5 dark:bg-white/5">
-                                <img alt="Post thumbnail" src={`${import.meta.env.VITE_API_URL}/feeds/${feed.featuredImage}`} className="absolute inset-0 w-full h-full object-cover" />
+                                <img alt="Post thumbnail" src={`${import.meta.env.VITE_API_URL}/uploads/feeds/${feed.featuredImage}`} className="absolute inset-0 w-full h-full object-cover" />
                             </div>
                         </Link>
                         <div className="space-y-2">
