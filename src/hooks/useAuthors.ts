@@ -1,24 +1,53 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../api/axiosConfig";
 
-// Define your Author type/interface
 export interface Author {
   id: string;
   name: string;
-  // add additional fields if necessary
+  username: string;
+  avatarUrl: string | null;
+  bio: string | null;
+  website: string | null;
+  twitter: string | null;
+  github: string | null;
+  postCount: number;
 }
 
-// Async function to fetch authors using your axiosInstance
+export interface AuthorDetail extends Author {
+  posts: {
+    id: string;
+    title: string;
+    slug: string;
+    description: string;
+    featuredImage: string;
+    category: {
+      id: string;
+      name: string;
+    };
+    createdAt: string;
+  }[];
+}
+
 const fetchAuthors = async (): Promise<Author[]> => {
   const response = await axiosInstance.get<Author[]>('/authors');
   return response.data;
 };
 
-// Custom hook using react-query with the object syntax
 const useAuthors = () => {
   return useQuery<Author[], Error>({
     queryKey: ['authors'],
     queryFn: fetchAuthors,
+  });
+};
+
+export const useAuthor = (id: string) => {
+  return useQuery<AuthorDetail, Error>({
+    queryKey: ['author', id],
+    queryFn: async () => {
+      const response = await axiosInstance.get<AuthorDetail>(`/authors/${id}`);
+      return response.data;
+    },
+    enabled: !!id,
   });
 };
 
