@@ -1,18 +1,29 @@
 import { useQuery } from '@tanstack/react-query';
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import axiosInstance from '../api/axiosConfig';
 
+interface Category {
+    id: string;
+    name: string;
+}
+
 const Footer: React.FC = () => {
 
-    // Fetch categories
-    const { data: categories } = useQuery({
+    const { data: categories = [] } = useQuery<Category[]>({
         queryKey: ["categories"],
         queryFn: async () => {
             const response = await axiosInstance.get("/category/fetch-all");
-            return response.data; // Assuming response.data is an array of categories
+            return response.data;
         },
+        staleTime: 1000 * 60 * 5,
     });
+
+    const displayCategories = useMemo(() => {
+        if (categories.length <= 15) return categories;
+        const shuffled = [...categories].sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, 15);
+    }, [categories]);
 
     return (
         <div className="max-w-[1480px] mx-auto px-5 sm:px-8 mt-28 bg-white dark:bg-black">
@@ -27,19 +38,18 @@ const Footer: React.FC = () => {
                     <h3 className="uppercase text-sm tracking-wider mb-6">categories</h3>
                     <div>
                         <div className="flex flex-wrap gap-3">
-                            {categories && categories.map((category: { name: string }, index: number) => (
+                            {displayCategories.map((category) => (
                                 <Link
-                                    key={index}
+                                    key={category.id}
                                     className="text-xs font-medium uppercase rounded-full py-1.5 px-2.5 border border-black text-black 
                                            hover:bg-black hover:text-white 
                                            dark:border-gray-300 dark:text-gray-300 
                                            dark:hover:bg-gray-300 dark:hover:text-black 
                                            tracking-wide whitespace-nowrap transition"
-                                    to={`feeds/category/${category.name.toLowerCase()}`}
+                                    to={`/feed/category/${encodeURIComponent(category.name.toLowerCase())}`}
                                 >
                                     {category.name}
                                 </Link>
-
                             ))}
                         </div>
                     </div>
@@ -48,7 +58,7 @@ const Footer: React.FC = () => {
                     <h3 className="uppercase text-sm tracking-wider mb-6">links</h3>
                     <ul className="flex flex-col gap-2 text-[15px] capitalize font-medium ">
                         <li><Link to="/">home</Link></li>
-                        <li><Link to="/web3">web3</Link></li>
+                        <li><Link to="/feed/category/web3">web3</Link></li>
                         <li><Link to="/contact">contact</Link></li>
                         <li><Link to="/authors">authors</Link></li>
                     </ul>
