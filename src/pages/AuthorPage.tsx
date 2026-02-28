@@ -6,6 +6,7 @@ import Footer from '../components/Footer';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '../api/axiosConfig';
+import { Feed } from '../utils/types';
 
 const Author: React.FC = () => {
     const params = useParams();
@@ -45,7 +46,7 @@ const Author: React.FC = () => {
                     {/* <p>{author?.user?.bio}</p> */}
                 </div>
                 <div className="grid gap-10 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                    {author?.user?.feeds?.map((post, index) => (
+                    {author?.user?.feeds?.map((post: Feed, index: number) => (
                         <PostCard post={post} key={index} />
                     ))}
                 </div>
