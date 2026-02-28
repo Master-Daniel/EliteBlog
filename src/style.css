@@ -31,6 +31,23 @@ html {
     background: black;
 }
 
+/* React Select dark mode variables */
+:root {
+    --select-bg: white;
+    --select-border: #d1d5db;
+    --select-text: #111827;
+    --select-placeholder: #9ca3af;
+    --select-option-hover: #f3f4f6;
+}
+
+[data-theme="dark"] {
+    --select-bg: #1f2937;
+    --select-border: #4b5563;
+    --select-text: #f9fafb;
+    --select-placeholder: #9ca3af;
+    --select-option-hover: #374151;
+}
+
 a {
     color: inherit;
     text-decoration: inherit;
