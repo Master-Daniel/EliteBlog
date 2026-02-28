@@ -25,19 +25,20 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => {
 
     const handleGoogleLogin = useGoogleLogin({
         onSuccess: async (credentialResponse) => {
-            console.log("Google login success:", credentialResponse);
             try {
-                const response = await axiosInstance.get(
-                    "https://www.googleapis.com/oauth2/v3/userinfo",
-                    {
-                        headers: {
-                            Authorization: `Bearer ${credentialResponse.access_token}`,
-                        },
-                    }
-                );
-                console.log("Google user data", response.data);
+                const response = await axiosInstance.post("/auth/google/token", {
+                    access_token: credentialResponse.access_token,
+                });
+
+                if (response.data && response.data.user) {
+                    const { token, ...userData } = response.data.user;
+                    setCookie("elite-blog-token", token, 1440);
+                    dispatch(setUserData(userData));
+                    dispatch(setIsLoggedIn(true));
+                    onClose();
+                }
             } catch (error) {
-                console.error("Error fetching Google user data", error);
+                console.error("Error authenticating with Google:", error);
             }
         },
         onError: () => {
