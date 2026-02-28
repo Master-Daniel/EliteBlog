@@ -3,10 +3,15 @@ import Header from '../components/Header'
 import NewsLetterSection from '../components/NewsLetterSection'
 import Footer from '../components/Footer'
 import { Link } from 'react-router-dom'
+import { PageMeta } from '../components/Meta'
 
 const Contact: React.FC = () => {
     return (
         <>
+            <PageMeta
+                title="Contact Us"
+                description="Get in touch with EliteBlog. Share your ideas, questions, and feedback. We value your voice and are here to help."
+            />
             <Header />
             <div className="max-w-[1480px] mx-auto px-5 sm:px-8 mb-8 mt-20 text-black dark:text-white">
                 <div className="mb-24 text-center max-w-screen-sm mx-auto">
