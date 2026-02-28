@@ -1,0 +1,107 @@
+name: Elite Bot
+
+on:
+    push:
+        branches:
+        - frontend
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.12.0"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the Next.js application
+        run: npm run build
+
+      - name: Archive build files
+        run: tar -czf dist.tar.gz .next public package.json next.config.js
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifact
+          path: dist.tar.gz
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build]
+
+    steps:
+      - name: Add SSH key for deploy
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact
+
+      - name: Print current working directory
+        run: pwd
+
+      - name: List files in current directory
+        run: ls -l
+
+      - name: Verify dist.tar.gz exists
+        run: test -f dist.tar.gz && echo "File exists" || echo "File not found"
+
+      - name: Verify SSH connection
+        run: ssh -oStrictHostKeyChecking=no ${{ secrets.USER}}@${{ secrets.SERVER_IP }} 'echo "SSH connection successful"'
+
+      - name: Deploy to VPS
+        run: |
+            # Ensure rsync is installed
+            sudo apt-get update && sudo apt-get install -y rsync
+      
+            # Upload the archive to the VPS
+            echo ${{ secrets.USER }}@${{ secrets.SERVER_IP }}
+            rsync -avz --progress -e "ssh -o StrictHostKeyChecking=no" dist.tar.gz ${{ secrets.USER }}@${{ secrets.SERVER_IP }}:elitebot/
+      
+            # Run deployment commands on the VPS
+            ssh -oStrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+            cd elitebot || exit
+            echo "Clearing old build files..."
+            rm -rf .next
+            echo "Extracting new build files..."
+            tar -xzf dist.tar.gz
+            echo "Setting correct ownership..."
+            sudo chown -R master-daniel:1004 .next package.json next.config.js || echo "Failed to change ownership"
+            echo "Installing dependencies..."
+            npm install --omit=dev || exit 1
+            EOF
+
+      - name: Restart or Start PM2 Process
+        run: |
+            /usr/local/apps/nodejs22/bin/pm2 restart elitebot-website || \
+            /usr/local/apps/nodejs22/bin/pm2 start npm --name "elitebot-website" -- start --watch
+            echo "Deployment complete."
+    
+      - name: Delete all artifacts
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const artifacts = await github.rest.actions.listArtifactsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+            for (const artifact of artifacts.data.artifacts) {
+              await github.rest.actions.deleteArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: artifact.id,
+              });
+            }
+          github-token: ${{ secrets.PAT_TOKEN }}
