@@ -2,16 +2,19 @@
 import { useImperativeHandle, forwardRef, useRef } from "react";
 import { Editor } from "../../vendor/tinymce/tinymce-react";
 import { fetchEventSource, EventSourceMessage } from "@microsoft/fetch-event-source";
+import axiosInstance from "../../api/axiosConfig";
 
 const fetchApi = Promise.resolve(fetchEventSource);
 
 const openai_api_key: string = import.meta.env.VITE_OPEN_AI_KEY as string;
+const apiUrl: string = import.meta.env.VITE_API_URL as string;
 
 interface TextEditorProps {
     onChange: (content: string) => void;
+    initialContent?: string;
 }
 
-const TextEditor = forwardRef(({ onChange }: TextEditorProps, ref) => {
+const TextEditor = forwardRef(({ onChange, initialContent }: TextEditorProps, ref) => {
     const editorRef = useRef<any>(null);
 
     useImperativeHandle(ref, () => ({
@@ -23,7 +26,34 @@ const TextEditor = forwardRef(({ onChange }: TextEditorProps, ref) => {
         getContent: () => {
             return editorRef.current?.getContent() || "";
         },
+        setContent: (content: string) => {
+            if (editorRef.current) {
+                editorRef.current.setContent(content);
+            }
+        },
     }));
+
+    const handleImageUpload = (blobInfo: any): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const formData = new FormData();
+            formData.append("image", blobInfo.blob(), blobInfo.filename());
+
+            axiosInstance
+                .post("/upload/image", formData, {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                })
+                .then((response) => {
+                    const imageUrl = `${apiUrl}/uploads/content/${response.data.filename}`;
+                    resolve(imageUrl);
+                })
+                .catch((error) => {
+                    console.error("Image upload failed:", error);
+                    reject("Image upload failed: " + (error.response?.data?.message || error.message));
+                });
+        });
+    };
 
     return (
         <Editor
@@ -33,15 +63,19 @@ const TextEditor = forwardRef(({ onChange }: TextEditorProps, ref) => {
                     onChange(editorRef.current.getContent())
                 }
             }}
-            initialValue="<p>Start creating something amazing...</p>"
+            initialValue={initialContent || "<p>Start creating something amazing...</p>"}
             init={{
                 height: 500,
                 plugins:
-                    'importword exportword exportpdf ai preview powerpaste casechange importcss tinydrive searchreplace autolink autosave save directionality advcode visualblocks visualchars fullscreen image link math media mediaembed codesample table charmap pagebreak nonbreaking anchor tableofcontents insertdatetime advlist lists checklist wordcount tinymcespellchecker a11ychecker editimage help formatpainter permanentpen pageembed charmap quickbars linkchecker emoticons advtable footnotes mergetags autocorrect typography advtemplate markdown', // tinycomments mentions revisionhistory
+                    'importword exportword exportpdf ai preview powerpaste casechange importcss searchreplace autolink autosave save directionality advcode visualblocks visualchars fullscreen image link math media mediaembed codesample table charmap pagebreak nonbreaking anchor tableofcontents insertdatetime advlist lists checklist wordcount tinymcespellchecker a11ychecker editimage help formatpainter permanentpen pageembed charmap quickbars linkchecker emoticons advtable footnotes mergetags autocorrect typography advtemplate markdown',
                 mobile: {
                     plugins:
-                        'ai preview powerpaste casechange importcss tinydrive searchreplace autolink autosave save directionality advcode visualblocks visualchars fullscreen image link math media mediaembed codesample table charmap pagebreak nonbreaking anchor tableofcontents insertdatetime advlist lists checklist wordcount tinymcespellchecker a11ychecker help formatpainter pageembed charmap mentions quickbars linkchecker emoticons advtable footnotes mergetags autocorrect typography advtemplate',
+                        'ai preview powerpaste casechange importcss searchreplace autolink autosave save directionality advcode visualblocks visualchars fullscreen image link math media mediaembed codesample table charmap pagebreak nonbreaking anchor tableofcontents insertdatetime advlist lists checklist wordcount tinymcespellchecker a11ychecker help formatpainter pageembed charmap mentions quickbars linkchecker emoticons advtable footnotes mergetags autocorrect typography advtemplate',
                 },
+                images_upload_handler: handleImageUpload,
+                automatic_uploads: true,
+                file_picker_types: 'image',
+                images_reuse_filename: true,
                 // menu: {
                 //     tc: {
                 //         title: 'Comments',
