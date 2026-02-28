@@ -57,10 +57,13 @@ const Footer: React.FC = () => {
                 <div className="">
                     <h3 className="uppercase text-sm tracking-wider mb-6">links</h3>
                     <ul className="flex flex-col gap-2 text-[15px] capitalize font-medium ">
-                        <li><Link to="/">home</Link></li>
-                        <li><Link to="/feed/category/web3">web3</Link></li>
-                        <li><Link to="/contact">contact</Link></li>
-                        <li><Link to="/authors">authors</Link></li>
+                        <li><Link to="/">Home</Link></li>
+                        <li><Link to="/feed/category/business">Business</Link></li>
+                        <li><Link to="/feed/category/programming">Programming</Link></li>
+                        <li><Link to="/feed/category/web3">Web3</Link></li>
+                        <li><Link to="/feed/category/life%20style">Life Style</Link></li>
+                        <li><Link to="/contact">Contact</Link></li>
+                        <li><Link to="/authors">Authors</Link></li>
                     </ul>
                 </div>
                 <div className="">
