@@ -100,8 +100,8 @@ const SideBar: React.FC = () => {
                                     </Link>
                                 </li>
                                 <li className="flex items-center space-x-2 cursor-pointer text-gray-700 dark:text-gray-200 hover:text-gray-500 dark:hover:text-gray-400">
-                                    <Link to="/dashboard/admin" className="flex items-center space-x-2">
-                                        <Settings /> <span>Settings</span>
+                                    <Link to="/dashboard/admin/settings" className="flex items-center space-x-2">
+                                        <Settings /> <span>Site Settings</span>
                                     </Link>
                                 </li>
                             </ul>
