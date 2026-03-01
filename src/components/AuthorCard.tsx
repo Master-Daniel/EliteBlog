@@ -1,12 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Author } from '../hooks/useAuthors';
+import AchievementBadge from './AchievementBadge';
 
 interface AuthorCardProps {
     author: Author;
 }
 
 const AuthorCard: React.FC<AuthorCardProps> = ({ author }) => {
+    const topAchievements = author.achievements?.slice(-3).reverse() || [];
+
     return (
         <div className="text-center">
             <Link to={`/author/${author.id}`}>
@@ -32,6 +35,18 @@ const AuthorCard: React.FC<AuthorCardProps> = ({ author }) => {
             <div className="text-gray-600 dark:text-gray-400">
                 {author.postCount} {author.postCount === 1 ? 'Post' : 'Posts'}
             </div>
+            
+            {!author.isAdmin && topAchievements.length > 0 && (
+                <div className="flex gap-1.5 justify-center mt-3">
+                    {topAchievements.map((achievement) => (
+                        <AchievementBadge
+                            key={achievement.type}
+                            achievement={achievement}
+                            size="sm"
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
