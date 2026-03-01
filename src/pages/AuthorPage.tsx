@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import Header from '../components/Header';
 import NewsLetterSection from '../components/NewsLetterSection';
 import Footer from '../components/Footer';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { useAuthor } from '../hooks/useAuthors';
 import Meta from '../components/Meta';
 import { SEO_CONFIG, generatePersonSchema, calculateReadingTime, stripHtml } from '../utils/seo';
 import { AchievementShowcase } from '../components/AchievementBadge';
+
+const POSTS_PER_PAGE = 6;
 
 const PostCardSkeleton: React.FC = () => (
     <div className="animate-pulse">
@@ -23,7 +25,23 @@ const PostCardSkeleton: React.FC = () => (
 
 const AuthorPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
+    const [searchParams] = useSearchParams();
     const { data: author, isLoading, isError } = useAuthor(id || '');
+
+    const currentPage = parseInt(searchParams.get('page') || '1', 10);
+
+    const { paginatedPosts, totalPages } = useMemo(() => {
+        if (!author?.posts) {
+            return { paginatedPosts: [], totalPages: 0 };
+        }
+        const total = Math.ceil(author.posts.length / POSTS_PER_PAGE);
+        const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
+        const endIndex = startIndex + POSTS_PER_PAGE;
+        return {
+            paginatedPosts: author.posts.slice(startIndex, endIndex),
+            totalPages: total,
+        };
+    }, [author?.posts, currentPage]);
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -204,7 +222,7 @@ const AuthorPage: React.FC = () => {
 
                 {/* Posts Grid */}
                 <div className="grid gap-10 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                    {author.posts.map((post) => {
+                    {paginatedPosts.map((post) => {
                         const readingTime = post.content 
                             ? calculateReadingTime(stripHtml(post.content))
                             : post.description 
@@ -288,6 +306,33 @@ const AuthorPage: React.FC = () => {
                         );
                     })}
                 </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <div className="flex justify-center items-center gap-4 mt-20 text-black dark:text-white">
+                        {currentPage > 1 && (
+                            <Link
+                                className="p-2.5 border border-black rounded-full dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+                                to={currentPage === 2 ? `/author/${author.id}` : `/author/${author.id}?page=${currentPage - 1}`}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                                </svg>
+                            </Link>
+                        )}
+                        <span className="text-sm">Page {currentPage} of {totalPages}</span>
+                        {currentPage < totalPages && (
+                            <Link
+                                className="p-2.5 border border-black rounded-full dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
+                                to={`/author/${author.id}?page=${currentPage + 1}`}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                                </svg>
+                            </Link>
+                        )}
+                    </div>
+                )}
 
                 {author.posts.length === 0 && (
                     <div className="text-center py-16">
