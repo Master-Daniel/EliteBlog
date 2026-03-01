@@ -22,6 +22,7 @@ import Analytics from "../pages/dashboard/Analytics";
 import AdminSetup from "../pages/dashboard/AdminSetup";
 import UserManagement from "../pages/dashboard/UserManagement";
 import FeaturedPosts from "../pages/dashboard/FeaturedPosts";
+import SettingsPage from "../pages/dashboard/Settings";
 import FeedBody from "../pages/FeedBody";
 import CategoryFeeds from "../pages/CategoryFeeds";
 import TagFeeds from "../pages/TagFeeds";
@@ -65,6 +66,7 @@ const routes = createBrowserRouter([
                             { path: 'verify-post', element: <AdminPostApprovalPage /> },
                             { path: 'featured-posts', element: <FeaturedPosts /> },
                             { path: 'users', element: <UserManagement /> },
+                            { path: 'settings', element: <SettingsPage /> },
                         ]
                     },
                 ]
