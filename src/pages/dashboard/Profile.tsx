@@ -15,6 +15,7 @@ import LanguageIcon from "@mui/icons-material/Language";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import PushNotificationToggle from "../../components/PushNotificationToggle";
 
 interface ProfileFormValues {
     name: string;
@@ -205,7 +206,7 @@ const ProfilePage: React.FC = () => {
                                             ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400"
                                             : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
                                     }`}>
-                                        {userData?.role?.charAt(0).toUpperCase() + userData?.role?.slice(1)}
+                                        {userData?.role ? userData.role.charAt(0).toUpperCase() + userData.role.slice(1) : ''}
                                     </span>
                                 </div>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
@@ -395,10 +396,19 @@ const ProfilePage: React.FC = () => {
                                                 ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400"
                                                 : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
                                         }`}>
-                                            {userData?.role?.charAt(0).toUpperCase() + userData?.role?.slice(1)}
+                                            {userData?.role ? userData.role.charAt(0).toUpperCase() + userData.role.slice(1) : ''}
                                         </span>
                                     </div>
                                 </div>
+                            </div>
+
+                            {/* Notification Preferences */}
+                            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Notification Preferences</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                    Manage how you receive notifications about new posts and updates.
+                                </p>
+                                <PushNotificationToggle />
                             </div>
                         </div>
 
