@@ -106,7 +106,7 @@ const AllFeeds: React.FC = () => {
                         </p>
                         <Link
                             to="/"
-                            className="inline-block px-6 py-3 bg-black dark:bg-white text-white dark:text-black rounded-full hover:opacity-80 transition-opacity"
+                            className="inline-block px-6 py-3 bg-black dark:bg-white !text-white dark:!text-black rounded-full hover:opacity-80 transition-opacity"
                         >
                             Back to Home
                         </Link>
