@@ -56,7 +56,7 @@ const NewsLetterSection: React.FC = () => {
                         disabled={subscribeMutation.isPending}
                     />
                     <button 
-                        className="btn cursor-pointer relative flex-grow sm:flex-grow-0 text-white dark:text-black bg-black dark:bg-white disabled:opacity-50 disabled:cursor-not-allowed" 
+                        className="h-16 px-8 rounded-full font-semibold cursor-pointer flex-grow sm:flex-grow-0 bg-black text-white dark:bg-white dark:text-black hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed" 
                         type="submit"
                         disabled={subscribeMutation.isPending}
                     >
