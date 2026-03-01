@@ -7,6 +7,7 @@ import { setTheme } from "../redux/slices/globalSlice";
 import SignInModal from "./SignInModal";
 import SearchBar from "./SearchBar";
 import axiosInstance from "../api/axiosConfig";
+import PushNotificationToggle from "./PushNotificationToggle";
 
 interface SiteSettings {
     siteName?: string;
@@ -97,6 +98,9 @@ const Header: React.FC = () => {
                             )}
                         </ul>
                     </nav>
+
+                    {/* Push Notifications Toggle */}
+                    <PushNotificationToggle compact />
 
                     {/* Dark Mode Toggle */}
                     <button className="p-1.5 cursor-pointer" aria-label="Toggle light/dark themes" onClick={updateTheme}>
