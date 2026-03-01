@@ -133,7 +133,7 @@ const Footer: React.FC = () => {
                 </div>
             </div>
             <div className="py-6 text-sm text-center uppercase tracking-wide text-black dark:text-white">
-                {settings?.copyrightText || `© ${new Date().getFullYear()} EliteCodec Inc. All rights reserved.`}
+                {(settings?.copyrightText || `© {year} EliteCodec Inc. All rights reserved.`).replace('{year}', new Date().getFullYear().toString())}
             </div>
         </div>
     )
