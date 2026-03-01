@@ -6,6 +6,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useAuthor } from '../hooks/useAuthors';
 import Meta from '../components/Meta';
 import { SEO_CONFIG, generatePersonSchema, calculateReadingTime, stripHtml } from '../utils/seo';
+import { AchievementShowcase } from '../components/AchievementBadge';
 
 const PostCardSkeleton: React.FC = () => (
     <div className="animate-pulse">
@@ -190,6 +191,14 @@ const AuthorPage: React.FC = () => {
                                 </a>
                             )}
                         </div>
+                    )}
+
+                    {/* Achievements - Only show for non-admin authors */}
+                    {!author.isAdmin && (
+                        <AchievementShowcase
+                            achievements={author.achievements || []}
+                            progress={author.achievementProgress}
+                        />
                     )}
                 </div>
 
