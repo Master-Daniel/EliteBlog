@@ -116,8 +116,9 @@ const Meta = ({ meta }: { meta: MetaProps }) => {
         ...SEO_CONFIG.defaultKeywords,
     ].filter(Boolean).slice(0, 10).join(", ");
 
-    const readingTime = meta.content ? calculateReadingTime(meta.content) : undefined;
     const wordCount = meta.content ? countWords(meta.content) : undefined;
+    const _readingTime = meta.content ? calculateReadingTime(meta.content) : undefined;
+    void _readingTime; // Suppress unused variable warning - kept for potential future use
 
     useEffect(() => {
         document.title = metaTitle;
