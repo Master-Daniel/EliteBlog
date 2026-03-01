@@ -115,12 +115,12 @@ const AuthorPage: React.FC = () => {
                 meta={{
                     title: author.name,
                     description: author.bio || `Read articles by ${author.name} on EliteBlog. Explore their insights on technology, programming, and more.`,
-                    featuredImage: author.avatarUrl,
+                    featuredImage: author.avatarUrl ?? undefined,
                     type: "profile",
                     author: {
                         name: author.name,
                         username: author.username,
-                        avatarUrl: author.avatarUrl,
+                        avatarUrl: author.avatarUrl ?? undefined,
                     },
                     noIndex: false,
                 }}
@@ -132,8 +132,8 @@ const AuthorPage: React.FC = () => {
                         generatePersonSchema({
                             name: author.name,
                             url: `${SEO_CONFIG.siteUrl}/author/${author.id}`,
-                            image: author.avatarUrl,
-                            bio: author.bio,
+                            image: author.avatarUrl ?? undefined,
+                            bio: author.bio ?? undefined,
                             sameAs,
                         })
                     ),
