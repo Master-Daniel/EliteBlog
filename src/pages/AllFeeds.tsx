@@ -36,10 +36,11 @@ const AllFeeds: React.FC = () => {
         },
     });
 
-    const { feeds = [] } = data || {};
-    const totalPages = Math.ceil(feeds.length / POSTS_PER_PAGE);
+    const { feeds = [], featured = [] } = data || {};
+    const allPosts = [...featured, ...feeds];
+    const totalPages = Math.ceil(allPosts.length / POSTS_PER_PAGE);
     const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
-    const paginatedFeeds = feeds.slice(startIndex, startIndex + POSTS_PER_PAGE);
+    const paginatedFeeds = allPosts.slice(startIndex, startIndex + POSTS_PER_PAGE);
 
     return (
         <>
