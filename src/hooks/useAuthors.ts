@@ -1,6 +1,30 @@
 import { useQuery } from "@tanstack/react-query";
 import axiosInstance from "../api/axiosConfig";
 
+export interface Achievement {
+  type: string;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  requiredPosts: number;
+  earnedAt: string;
+}
+
+export interface AchievementProgress {
+  nextAchievement: {
+    type: string;
+    name: string;
+    description: string;
+    icon: string;
+    requiredPosts: number;
+    color: string;
+  } | null;
+  currentPosts: number;
+  postsToNext: number;
+  percentToNext: number;
+}
+
 export interface Author {
   id: string;
   name: string;
@@ -11,6 +35,8 @@ export interface Author {
   twitter: string | null;
   github: string | null;
   postCount: number;
+  isAdmin: boolean;
+  achievements?: Achievement[];
 }
 
 export interface AuthorDetail extends Author {
@@ -20,12 +46,14 @@ export interface AuthorDetail extends Author {
     slug: string;
     description: string;
     featuredImage: string;
+    content?: string;
     category: {
       id: string;
       name: string;
     };
     createdAt: string;
   }[];
+  achievementProgress?: AchievementProgress;
 }
 
 const fetchAuthors = async (): Promise<Author[]> => {
