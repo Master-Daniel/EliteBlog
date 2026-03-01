@@ -17,10 +17,11 @@ const NotFound: React.FC = () => {
             <div className="max-w-[1480px] mx-auto px-5 sm:px-8 text-center my-52 text-black dark:text-white">
                 <h2 className="text-6xl md:text-[100px]">404</h2>
                 <p className="text-lg md:text-2xl mt-3">Page Not Found</p>
-                <Link to="/">
-                    <button className="btn cursor-pointer relative mt-6 text-white dark:text-black bg-black dark:bg-white">
-                        <span className="">Back Home</span>
-                    </button>
+                <Link 
+                    to="/"
+                    className="inline-block mt-6 px-8 py-3 rounded-full font-semibold cursor-pointer bg-black !text-white dark:bg-white dark:!text-black hover:opacity-80 transition-opacity"
+                >
+                    Back Home
                 </Link>
             </div>
             <NewsLetterSection />
