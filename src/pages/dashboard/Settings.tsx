@@ -75,8 +75,9 @@ const SettingsPage: React.FC = () => {
             queryClient.invalidateQueries({ queryKey: ["public-settings"] });
             toast.success("Settings updated successfully!");
         },
-        onError: () => {
-            toast.error("Failed to update settings");
+        onError: (error: { message?: string }) => {
+            console.error("Settings update error:", error);
+            toast.error(error.message || "Failed to update settings");
         },
     });
 
