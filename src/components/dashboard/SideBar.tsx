@@ -11,7 +11,8 @@ import {
     VerifiedUser,
     Settings,
     Person,
-    Bookmark
+    Bookmark,
+    Star
 } from "@mui/icons-material";
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -86,6 +87,11 @@ const SideBar: React.FC = () => {
                                 <li className="flex items-center space-x-2 cursor-pointer text-gray-700 dark:text-gray-200 hover:text-gray-500 dark:hover:text-gray-400">
                                     <Link to="/dashboard/admin/verify-post" className="flex items-center space-x-2">
                                         <VerifiedUser /> <span>Approve Posts</span>
+                                    </Link>
+                                </li>
+                                <li className="flex items-center space-x-2 cursor-pointer text-gray-700 dark:text-gray-200 hover:text-gray-500 dark:hover:text-gray-400">
+                                    <Link to="/dashboard/admin/featured-posts" className="flex items-center space-x-2">
+                                        <Star /> <span>Featured Posts</span>
                                     </Link>
                                 </li>
                                 <li className="flex items-center space-x-2 cursor-pointer text-gray-700 dark:text-gray-200 hover:text-gray-500 dark:hover:text-gray-400">
