@@ -20,9 +20,18 @@ const globalSlice = createSlice({
         setUserData: (state, action: PayloadAction<Partial<UserData>>) => {
             state.userData = { ...state.userData, ...action.payload }
         },
-        setFeeds: (state, action: PayloadAction<Partial<Feed[]>>) => {
-            state.feeds = { ...state.feeds, ...action.payload };
-        },
+        setFeeds: (state, action: PayloadAction<Partial<{ featured: Feed[]; feeds: Feed[] }>>) => {
+            if (!state.feeds) {
+                state.feeds = { featured: [], feeds: [] };
+            }
+            
+            if (action.payload.feeds) {
+                state.feeds.feeds = action.payload.feeds;
+            }
+            if (action.payload.featured) {
+                state.feeds.featured = action.payload.featured;
+            }
+        },        
         setTheme: (state, action: PayloadAction<string>) => {
             state.theme = action.payload
         }
