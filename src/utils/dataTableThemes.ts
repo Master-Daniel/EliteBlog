@@ -4,6 +4,7 @@ let themesInitialized = false;
 
 export const initDataTableThemes = () => {
     if (themesInitialized) return;
+    themesInitialized = true;
     
     createTheme('lightTheme', {
         text: {
@@ -45,14 +46,14 @@ export const initDataTableThemes = () => {
             secondary: '#9ca3af',
         },
         background: {
-            default: '#0a0a0a',
+            default: '#1f2937',
         },
         context: {
-            background: '#171717',
+            background: '#374151',
             text: '#ffffff',
         },
         divider: {
-            default: '#262626',
+            default: '#374151',
         },
         button: {
             default: '#9ca3af',
@@ -64,16 +65,14 @@ export const initDataTableThemes = () => {
             default: '#60a5fa',
         },
         highlightOnHover: {
-            default: '#171717',
+            default: '#374151',
             text: '#ffffff',
         },
         striped: {
-            default: '#0f0f0f',
+            default: '#111827',
             text: '#f9fafb',
         },
     }, 'dark');
-
-    themesInitialized = true;
 };
 
 export const getDataTableTheme = (theme: string): string => {
