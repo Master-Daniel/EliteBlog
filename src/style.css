@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css2?family=YourCustomFont:wght@400;700&display=swap");
 @import "tailwindcss";
 @config "../tailwind.config.ts";
-@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 @font-face {
     font-family: "CustomFont";
@@ -27,7 +27,7 @@ html {
     color: rgb(16 185 129/var(--tw-text-opacity))
 }
 
-.dark {
+[data-theme="dark"] {
     background: black;
 }
 
@@ -63,25 +63,27 @@ a {
     text-transform: capitalize;
 }
 
-.dark .btn {
+.btn {
+    display: inline-block;
+    height: 4rem;
+    border-radius: 9999px;
+    --tw-bg-opacity: 1;
+    background-color: rgb(0 0 0 / var(--tw-bg-opacity));
+    padding: .5rem 2rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    --tw-text-opacity: 1;
+    color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
+[data-theme="dark"] .btn {
     --tw-bg-opacity: 1;
     background-color: rgb(255 255 255 / var(--tw-bg-opacity));
     --tw-text-opacity: 1;
     color: rgb(0 0 0 / var(--tw-text-opacity));
 }
 
-.btn {
-    display: inline-block;
-    height: 4rem;
-    border-radius: 9999px;
-    --tw-bg-opacity: 1;
-    padding: .5rem 2rem;
-    font-weight: 600;
-    text-transform: capitalize;
-    --tw-text-opacity: 1;
-}
-
-.dark .txtInputBasics {
+[data-theme="dark"] .txtInputBasics {
     --tw-border-opacity: 1;
     border-color: rgb(107 114 128 / var(--tw-border-opacity));
 }
@@ -172,12 +174,12 @@ a {
     color: white;
 }
 
-.dark .category-link {
+[data-theme="dark"] .category-link {
     border-color: white;
     color: white;
 }
 
-.dark .category-link:hover {
+[data-theme="dark"] .category-link:hover {
     background-color: white;
     color: black;
 }
