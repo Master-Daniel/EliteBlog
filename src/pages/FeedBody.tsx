@@ -67,8 +67,8 @@ const FeedBody: React.FC = () => {
                     author={data.author ?? undefined}
                     category={data.category ?? undefined}
                     tags={data.tags}
-                    publishedTime={data.created_at}
-                    modifiedTime={data.updated_at}
+                    publishedTime={data.created_at instanceof Date ? data.created_at.toISOString() : data.created_at}
+                    modifiedTime={data.updated_at instanceof Date ? data.updated_at.toISOString() : data.updated_at}
                     slug={data.slug}
                     content={data.content}
                 />
@@ -96,7 +96,7 @@ const FeedBody: React.FC = () => {
                             </Link>
                         </div>
                         <div className="text-sm data-color flex items-center">
-                            <span className="whitespace-nowrap">{formatDate(data?.created_at || data?.schema?.datePublished)}</span>
+                            <span className="whitespace-nowrap">{formatDate(data?.created_at instanceof Date ? data.created_at.toISOString() : data?.created_at || data?.schema?.datePublished)}</span>
                             <span className="px-2.5">⋅</span>
                             <span className="whitespace-nowrap">{readingTime} min read</span>
                         </div>
