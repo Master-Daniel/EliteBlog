@@ -1,14 +1,18 @@
 export interface Feed {
     id: string;
-    title: string,
-    slug: string,
-    thumbnail: string,
-    category: { name: string },
-    description: string,
-    featuredImage: string,
-    date: string,
-    readTime: string,
-    author: { id: string, name: string, avatarUrl: string }
+    title: string;
+    slug: string;
+    thumbnail?: string;
+    category: { id?: string; name: string };
+    description: string;
+    featuredImage?: string;
+    content?: string;
+    created_at?: string;
+    updated_at?: string;
+    tags?: string[];
+    keywords?: string[];
+    status?: string;
+    author: { id: string; name: string; username?: string; avatarUrl?: string };
 }
 
 export interface UserData {
@@ -17,8 +21,15 @@ export interface UserData {
     username?: string;
     email?: string;
     avatarUrl?: string;
+    bio?: string;
+    website?: string;
+    twitter?: string;
+    github?: string;
+    provider?: string;
     role?: string;
     isLoggedIn?: boolean;
+    createdAt?: string;
+    feeds?: Array<{ status: string }>;
 }
 
 export interface GlobalState {
