@@ -1,10 +1,17 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { useQuery } from "@tanstack/react-query";
 import { RootState } from "../redux/store";
 import { setTheme } from "../redux/slices/globalSlice";
 import SignInModal from "./SignInModal";
 import SearchBar from "./SearchBar";
+import axiosInstance from "../api/axiosConfig";
+
+interface SiteSettings {
+    siteName?: string;
+    logoUrl?: string;
+}
 
 const NAV_ITEMS = [
     { name: "Home", path: "/" },
@@ -27,6 +34,15 @@ const Header: React.FC = () => {
 
     const isDashboard = location.pathname.startsWith("/dashboard");
 
+    const { data: settings } = useQuery<SiteSettings>({
+        queryKey: ["public-settings"],
+        queryFn: async () => {
+            const response = await axiosInstance.get("/settings/public");
+            return response.data;
+        },
+        staleTime: 1000 * 60 * 5,
+    });
+
     const toggleState = (setter: React.Dispatch<React.SetStateAction<boolean>>) => setter((prev) => !prev);
 
     const updateTheme = () => {
@@ -38,8 +54,17 @@ const Header: React.FC = () => {
     return (
         <div className="sticky top-0 z-40 shadow-md bg-white dark:bg-black transition-colors">
             <header className="py-5 px-5 sm:px-8 flex items-center w-full text-black dark:text-white">
-                <Link to="/" className="font-bold text-lg">
-                    EliteBlog
+                <Link to="/" className="font-bold text-lg flex items-center gap-2">
+                    {settings?.logoUrl && (
+                        <img 
+                            src={settings.logoUrl.startsWith('/uploads') 
+                                ? `${import.meta.env.VITE_API_URL}${settings.logoUrl}` 
+                                : settings.logoUrl} 
+                            alt={settings?.siteName || 'EliteBlog'} 
+                            className="h-8 w-auto"
+                        />
+                    )}
+                    <span>{settings?.siteName || 'EliteBlog'}</span>
                 </Link>
 
                 <div className="flex gap-1 ml-auto">
