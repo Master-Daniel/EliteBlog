@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import useFeed from "../hooks/useFeed";
 import Header from "../components/Header";
@@ -17,7 +17,29 @@ const FeedBody: React.FC = () => {
     const params = useParams();
     const navigate = useNavigate();
     const slug = params.slug;
-    const { feeds } = useSelector((state: RootState) => state.global)
+    const { feeds } = useSelector((state: RootState) => state.global);
+    const [scrollProgress, setScrollProgress] = useState(0);
+
+    // Calculate scroll progress
+    const handleScroll = useCallback(() => {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+        setScrollProgress(Math.min(100, Math.max(0, progress)));
+    }, []);
+
+    // Scroll progress listener
+    useEffect(() => {
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        handleScroll();
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [handleScroll]);
+
+    // Scroll to top when slug changes
+    useEffect(() => {
+        window.scrollTo(0, 0);
+        setScrollProgress(0);
+    }, [slug]);
 
     // Redirect if slug is missing
     useEffect(() => {
@@ -54,6 +76,14 @@ const FeedBody: React.FC = () => {
 
             <Header />
 
+            {/* Scroll Progress Indicator */}
+            <div className="fixed top-[73px] left-0 right-0 h-1 bg-gray-200 dark:bg-gray-800 z-50">
+                <div 
+                    className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-150 ease-out"
+                    style={{ width: `${scrollProgress}%` }}
+                />
+            </div>
+
             <div className="max-w-[1480px] mx-auto px-5 sm:px-8 mt-20 z-10 text-black dark:text-white">
                 <div className="max-w-screen-md mx-auto">
                     <div className="flex flex-wrap gap-3 items-center text-[15px]">
@@ -78,7 +108,7 @@ const FeedBody: React.FC = () => {
                         <div className="flex">
                             <Link
                                 className="flex -ml-3 first:ml-0 first:z-10 hover:z-20"
-                                to={`/author/${data?.author?.name}`}
+                                to={`/author/${data?.author?.id}`}
                             >
                                 <div
                                     className="rounded-full overflow-hidden border-gray-200 dark:border-gray-700 inline-block leading-[0] !border-2"
@@ -102,7 +132,7 @@ const FeedBody: React.FC = () => {
                         <div>
                             <Link
                                 className="text-sm font-medium heading-color"
-                                to={`/author/${data?.author?.name}`}
+                                to={`/author/${data?.author?.id}`}
                             >
                                 {data?.author?.name}
                             </Link>
