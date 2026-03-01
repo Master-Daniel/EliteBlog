@@ -3,6 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "../../api/axiosConfig";
 import { Feed } from "../../utils/types";
 import toast from "react-hot-toast";
+import Header from "../../components/Header";
+import SideBar from "../../components/dashboard/SideBar";
 
 interface FeaturedData {
     featured: string[];
@@ -71,13 +73,19 @@ const FeaturedPosts: React.FC = () => {
 
     if (postsLoading || featuredLoading) {
         return (
-            <div className="p-6">
-                <div className="animate-pulse space-y-6">
-                    <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="h-48 bg-gray-200 dark:bg-gray-700 rounded-lg" />
-                        ))}
+            <div className="flex h-screen overflow-hidden">
+                <SideBar />
+                <div className="flex flex-col flex-1 min-h-0">
+                    <Header />
+                    <div className="flex-1 overflow-y-auto p-6">
+                        <div className="animate-pulse space-y-6">
+                            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3" />
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                {[1, 2, 3].map((i) => (
+                                    <div key={i} className="h-48 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -85,7 +93,11 @@ const FeaturedPosts: React.FC = () => {
     }
 
     return (
-        <div className="p-6 text-gray-900 dark:text-white">
+        <div className="flex h-screen overflow-hidden">
+            <SideBar />
+            <div className="flex flex-col flex-1 min-h-0">
+                <Header />
+                <div className="flex-1 overflow-y-auto p-6 text-gray-900 dark:text-white">
             <div className="mb-8">
                 <h1 className="text-2xl font-bold mb-2">Manage Featured Posts</h1>
                 <p className="text-gray-600 dark:text-gray-400">
@@ -204,6 +216,8 @@ const FeaturedPosts: React.FC = () => {
                         Showing first 20 posts. Use search to find more.
                     </p>
                 )}
+            </div>
+                </div>
             </div>
         </div>
     );
