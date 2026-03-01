@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import SideBar from "../../components/dashboard/SideBar";
 import Header from "../../components/Header";
 import axiosInstance from "../../api/axiosConfig";
@@ -14,6 +14,7 @@ import GitHubIcon from "@mui/icons-material/GitHub";
 import LanguageIcon from "@mui/icons-material/Language";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 
 interface ProfileFormValues {
     name: string;
@@ -21,6 +22,30 @@ interface ProfileFormValues {
     website: string;
     twitter: string;
     github: string;
+}
+
+interface Achievement {
+    type: string;
+    name: string;
+    description: string;
+    icon: string;
+    color: string;
+    requiredPosts: number;
+    earnedAt: string;
+}
+
+interface AchievementProgress {
+    nextAchievement: {
+        type: string;
+        name: string;
+        description: string;
+        icon: string;
+        requiredPosts: number;
+        color: string;
+    } | null;
+    currentPosts: number;
+    postsToNext: number;
+    percentToNext: number;
 }
 
 const validationSchema = Yup.object({
@@ -37,6 +62,24 @@ const ProfilePage: React.FC = () => {
     const { userData } = useSelector((state: RootState) => state.global);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+    const { data: achievements = [] } = useQuery<Achievement[]>({
+        queryKey: ["my-achievements"],
+        queryFn: async () => {
+            const response = await axiosInstance.get("/achievements/my");
+            return response.data;
+        },
+        enabled: userData?.role !== "admin",
+    });
+
+    const { data: progress } = useQuery<AchievementProgress>({
+        queryKey: ["my-achievements-progress"],
+        queryFn: async () => {
+            const response = await axiosInstance.get("/achievements/my/progress");
+            return response.data;
+        },
+        enabled: userData?.role !== "admin",
+    });
 
     const updateMutation = useMutation({
         mutationFn: async (values: ProfileFormValues) => {
@@ -198,6 +241,95 @@ const ProfilePage: React.FC = () => {
                                 <p className="text-sm text-gray-500 dark:text-gray-400">Auth Method</p>
                             </div>
                         </div>
+
+                        {/* Achievements Section - Only for non-admin users */}
+                        {userData?.role !== "admin" && (
+                            <div className="bg-white dark:bg-gray-800 rounded-xl p-6 mb-6 border border-gray-200 dark:border-gray-700">
+                                <div className="flex items-center gap-2 mb-6">
+                                    <EmojiEventsIcon className="text-yellow-500" />
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Achievements</h3>
+                                </div>
+
+                                {/* Earned Achievements */}
+                                {achievements.length > 0 ? (
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                                        {achievements.map((achievement) => (
+                                            <div
+                                                key={achievement.type}
+                                                className="relative group p-4 rounded-xl border-2 text-center transition-all hover:scale-105"
+                                                style={{ 
+                                                    borderColor: achievement.color,
+                                                    backgroundColor: `${achievement.color}10`
+                                                }}
+                                            >
+                                                <div className="text-4xl mb-2">{achievement.icon}</div>
+                                                <p className="font-semibold text-sm text-gray-900 dark:text-white">
+                                                    {achievement.name}
+                                                </p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                    {achievement.description}
+                                                </p>
+                                                <p className="text-xs mt-2" style={{ color: achievement.color }}>
+                                                    Earned {new Date(achievement.earnedAt).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                                        <p className="text-4xl mb-2">🎯</p>
+                                        <p>No achievements yet. Start publishing posts to earn badges!</p>
+                                    </div>
+                                )}
+
+                                {/* Progress to Next Achievement */}
+                                {progress?.nextAchievement && (
+                                    <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-2xl">{progress.nextAchievement.icon}</span>
+                                                <div>
+                                                    <p className="font-medium text-gray-900 dark:text-white">
+                                                        Next: {progress.nextAchievement.name}
+                                                    </p>
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                        {progress.nextAchievement.description}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                                                {progress.currentPosts}/{progress.nextAchievement.requiredPosts} posts
+                                            </span>
+                                        </div>
+                                        <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full rounded-full transition-all duration-500"
+                                                style={{
+                                                    width: `${progress.percentToNext}%`,
+                                                    backgroundColor: progress.nextAchievement.color
+                                                }}
+                                            />
+                                        </div>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 text-center">
+                                            {progress.postsToNext} more {progress.postsToNext === 1 ? 'post' : 'posts'} to unlock!
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* All achievements unlocked */}
+                                {!progress?.nextAchievement && achievements.length > 0 && (
+                                    <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 text-center">
+                                        <p className="text-2xl mb-2">🏆</p>
+                                        <p className="font-medium text-gray-900 dark:text-white">
+                                            Congratulations! You've unlocked all achievements!
+                                        </p>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                            You are a Legendary Author with {progress?.currentPosts || 0} published posts
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* Edit Profile Form */}
                         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
