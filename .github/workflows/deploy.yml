@@ -30,11 +30,11 @@ jobs:
       - name: Install dependencies
         run: |
           if [ -d node_modules ] && [ -f package-lock.json ]; then
-            echo "Restored node_modules from cache; running npm install (quick sync)..."
-            npm install --prefer-offline --no-audit --no-fund
+            echo "Restored node_modules from cache; syncing..."
+            npm install --legacy-peer-deps --prefer-offline --no-audit --no-fund
           else
-            echo "Full install; npm install..."
-            npm install --no-audit --no-fund
+            echo "Full install (legacy-peer-deps for React 19 / tinymce peer conflict)..."
+            npm install --legacy-peer-deps --no-audit --no-fund
           fi
 
       - name: Build
