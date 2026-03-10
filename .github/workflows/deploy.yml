@@ -63,20 +63,20 @@ jobs:
 
       - name: Check deploy secrets
         run: |
-          if [ -z "${{ secrets.SERVER_IP }}" ] || [ -z "${{ secrets.SSH_USER }}" ]; then
-            echo "::error::Missing required secrets. Add SERVER_IP and SSH_USER in repo Settings → Secrets and variables → Actions."
-            echo "Required: SSH_KEY, SERVER_IP, SSH_USER. Optional: SSH_PORT (default 22)."
+          if [ -z "${{ secrets.SERVER_IP }}" ] || [ -z "${{ secrets.USER }}" ]; then
+            echo "::error::Missing required secrets. Add SERVER_IP and USER in repo Settings → Secrets and variables → Actions."
+            echo "Required: SSH_KEY, SERVER_IP, USER. Optional: SSH_PORT (default 22)."
             exit 1
           fi
 
       - name: Verify SSH connection
         run: |
-          ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} 'echo "SSH connection successful"'
+          ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} 'echo "SSH connection successful"'
 
       - name: Deploy to Production
         run: |
-          ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} \
-            "TARGET_BRANCH=$TARGET_BRANCH DEPLOY_PATH=$DEPLOY_PATH REPO=${{ github.repository }} DEPLOY_USER=${{ secrets.SSH_USER }} bash -s" << 'EOF'
+          ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} \
+            "TARGET_BRANCH=$TARGET_BRANCH DEPLOY_PATH=$DEPLOY_PATH REPO=${{ github.repository }} DEPLOY_USER=${{ secrets.USER }} bash -s" << 'EOF'
             set -e
             echo "Deploying Elite-Blog frontend to $DEPLOY_PATH on branch $TARGET_BRANCH"
 
