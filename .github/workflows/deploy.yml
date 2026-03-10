@@ -98,10 +98,11 @@ jobs:
 
             sudo chown -R ${DEPLOY_USER}:${DEPLOY_USER} "${DEPLOY_PATH}" 2>/dev/null || true
 
+            chmod +x "${DEPLOY_PATH}/scripts/deploy-orchestrator.sh" 2>/dev/null || true
             if [ -x "${DEPLOY_PATH}/scripts/deploy-orchestrator.sh" ]; then
               cd "${DEPLOY_PATH}" && ./scripts/deploy-orchestrator.sh production
             else
-              cd "${DEPLOY_PATH}" && npm ci && npm run build
+              cd "${DEPLOY_PATH}" && npm ci --legacy-peer-deps && npm run build
               echo "Frontend build done. Copy dist/ to your web server root (e.g. FRONTEND_WEB_ROOT)."
             fi
             echo "Frontend deployment completed."
