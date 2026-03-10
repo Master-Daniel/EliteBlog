@@ -14,7 +14,7 @@ SENTINEL="${APP_ROOT}/.apache-domain-configured"
 
 cd "${APP_ROOT}"
 echo "Installing dependencies..."
-npm ci --no-audit --no-fund
+npm ci --legacy-peer-deps --no-audit --no-fund
 echo "Building..."
 npm run build
 echo "Build complete."
