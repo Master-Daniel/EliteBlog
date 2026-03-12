@@ -76,7 +76,7 @@ jobs:
       - name: Deploy to Production
         env:
           CERTBOT_EMAIL: ${{ secrets.CERTBOT_EMAIL }}
-          FRONTEND_DOMAIN: ${{ secrets.FRONTEND_DOMAIN || 'www.the-eliteblog.com' }}
+          FRONTEND_DOMAIN: ${{ secrets.FRONTEND_DOMAIN || 'the-eliteblog.com' }}
           FRONTEND_WEB_ROOT: ${{ secrets.FRONTEND_WEB_ROOT || '/var/www/elite-blog/frontend-dist' }}
         run: |
           ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} \
