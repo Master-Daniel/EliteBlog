@@ -1,29 +1,39 @@
 #!/usr/bin/env bash
-# Run from frontend repo root (DEPLOY_PATH). Builds, copies dist, and (once) configures Apache + certbot.
+# Run from frontend repo root (DEPLOY_PATH). Builds in place, serves from frontend/dist, configures Apache + certbot.
 # Usage: ./scripts/deploy-orchestrator.sh [production]
-# Env: FRONTEND_WEB_ROOT, FRONTEND_DOMAIN. Domain config runs only once.
+# Env: FRONTEND_DOMAIN. Creates .env with production URLs (api.the-eliteblog.com) before build.
 CERTBOT_EMAIL="${CERTBOT_EMAIL:-admin@the-eliteblog.com}"
 
 set -e
 ENV="${1:-production}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-WEB_ROOT="${FRONTEND_WEB_ROOT:-/var/www/elite-blog/frontend-dist}"
+WEB_ROOT="${APP_ROOT}/dist"
 FRONTEND_DOMAIN="${FRONTEND_DOMAIN:-the-eliteblog.com}"
+BACKEND_API_DOMAIN="${BACKEND_API_DOMAIN:-api.the-eliteblog.com}"
 APACHE_SITE_ID="${APACHE_SITE_ID:-elite-blog-frontend}"
 SENTINEL="${APP_ROOT}/.apache-domain-configured"
 
 cd "${APP_ROOT}"
+
+# Create production .env (URLs for backend api.the-eliteblog.com; other vars from env or defaults)
+echo "Creating production .env..."
+cat > "${APP_ROOT}/.env" << ENVFILE
+VITE_FRONTEND_URL="https://${FRONTEND_DOMAIN}"
+VITE_API_URL="https://${BACKEND_API_DOMAIN}"
+VITE_BASE_URL="https://${BACKEND_API_DOMAIN}/api"
+VITE_GOOGLE_OAUTH_CLIENT_ID="${VITE_GOOGLE_OAUTH_CLIENT_ID:-249661581186-6avjnq3ql43qupmumv84ta44mhvi5tp3.apps.googleusercontent.com}"
+VITE_GOOGLE_OAUTH_CLIENT_SECRET="${VITE_GOOGLE_OAUTH_CLIENT_SECRET:-}"
+VITE_GITHUB_CLIENT_ID="${VITE_GITHUB_CLIENT_ID:-Ov23liYY4dwJHihd3R1k}"
+VITE_GITHUB_REDIRECT_URI="https://${BACKEND_API_DOMAIN}/api/auth/github/callback"
+VITE_OPEN_AI_KEY="${VITE_OPEN_AI_KEY:-}"
+ENVFILE
+
 echo "Installing dependencies..."
 npm ci --legacy-peer-deps --no-audit --no-fund
 echo "Building..."
 npm run build
-echo "Build complete."
-
-mkdir -p "${WEB_ROOT}"
-echo "Copying dist to ${WEB_ROOT}..."
-rsync -av --delete "${APP_ROOT}/dist/" "${WEB_ROOT}/" 2>/dev/null || cp -R "${APP_ROOT}/dist/"* "${WEB_ROOT}/"
-echo "Frontend deployment complete. Serve from ${WEB_ROOT}"
+echo "Build complete. Serving from ${WEB_ROOT}"
 
 # Apache: ensure vhost exists, then always run certbot
 APACHE_CONF=""
@@ -36,10 +46,9 @@ fi
 if [ -z "${APACHE_CONF}" ]; then
   echo "Apache not found (no /etc/apache2 or /etc/httpd). Skipping."
 else
-  # 1) Create vhost if missing
-  if ! sudo test -f "${APACHE_CONF}" || ! sudo grep -q "ServerName ${FRONTEND_DOMAIN}" "${APACHE_CONF}" 2>/dev/null; then
-    echo "Creating Apache vhost for ${FRONTEND_DOMAIN} at ${APACHE_CONF}..."
-    sudo tee "${APACHE_CONF}" >/dev/null <<APACHE_HTTP
+  # 1) Create or update vhost (always write so DocumentRoot stays correct, e.g. frontend/dist)
+  echo "Creating/updating Apache vhost for ${FRONTEND_DOMAIN} at ${APACHE_CONF}..."
+  sudo tee "${APACHE_CONF}" >/dev/null <<APACHE_HTTP
 <VirtualHost *:80>
     ServerName ${FRONTEND_DOMAIN}
     DocumentRoot ${WEB_ROOT}
@@ -51,16 +60,13 @@ else
     </Directory>
 </VirtualHost>
 APACHE_HTTP
-    if [ -d /etc/apache2 ] && [ -x /usr/sbin/a2ensite ]; then
-      sudo a2ensite "${APACHE_SITE_ID}" 2>/dev/null || true
-      sudo a2dissite 000-default 2>/dev/null || true
-      sudo a2enmod rewrite ssl 2>/dev/null || true
-    fi
-    sudo apache2ctl configtest 2>/dev/null && sudo systemctl reload apache2 2>/dev/null || \
-    sudo apachectl configtest 2>/dev/null && sudo systemctl reload httpd 2>/dev/null || true
-  else
-    echo "Apache vhost for ${FRONTEND_DOMAIN} already at ${APACHE_CONF}."
+  if [ -d /etc/apache2 ] && [ -x /usr/sbin/a2ensite ]; then
+    sudo a2ensite "${APACHE_SITE_ID}" 2>/dev/null || true
+    sudo a2dissite 000-default 2>/dev/null || true
+    sudo a2enmod rewrite ssl 2>/dev/null || true
   fi
+  sudo apache2ctl configtest 2>/dev/null && sudo systemctl reload apache2 2>/dev/null || \
+  sudo apachectl configtest 2>/dev/null && sudo systemctl reload httpd 2>/dev/null || true
 
   # 2) Always run certbot (get cert or renew; idempotent)
   if command -v certbot &>/dev/null || [ -x /usr/bin/certbot ]; then
