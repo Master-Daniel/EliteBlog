@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Run from frontend repo root (DEPLOY_PATH). Builds, copies dist, and (once) configures Apache + certbot.
 # Usage: ./scripts/deploy-orchestrator.sh [production]
-# Env: FRONTEND_WEB_ROOT, FRONTEND_DOMAIN, CERTBOT_EMAIL (required for first-time HTTPS). Domain config runs only once.
+# Env: FRONTEND_WEB_ROOT, FRONTEND_DOMAIN. Domain config runs only once.
+CERTBOT_EMAIL="${CERTBOT_EMAIL:-admin@the-eliteblog.com}"
 
 set -e
 ENV="${1:-production}"
@@ -24,7 +25,7 @@ echo "Copying dist to ${WEB_ROOT}..."
 rsync -av --delete "${APP_ROOT}/dist/" "${WEB_ROOT}/" 2>/dev/null || cp -R "${APP_ROOT}/dist/"* "${WEB_ROOT}/"
 echo "Frontend deployment complete. Serve from ${WEB_ROOT}"
 
-# Apache + certbot: run when vhost config is missing (not just sentinel)
+# Apache + certbot: run when vhost config is missing
 APACHE_CONF=""
 if [ -d /etc/apache2 ]; then
   APACHE_CONF="/etc/apache2/sites-available/${APACHE_SITE_ID}.conf"
@@ -34,10 +35,10 @@ fi
 
 if [ -z "${APACHE_CONF}" ]; then
   echo "Apache not found (no /etc/apache2 or /etc/httpd). Skipping domain config."
-elif [ -f "${APACHE_CONF}" ] && grep -q "ServerName ${FRONTEND_DOMAIN}" "${APACHE_CONF}" 2>/dev/null; then
-  echo "Apache vhost for ${FRONTEND_DOMAIN} already configured. Skipping."
+elif sudo test -f "${APACHE_CONF}" && sudo grep -q "ServerName ${FRONTEND_DOMAIN}" "${APACHE_CONF}" 2>/dev/null; then
+  echo "Apache vhost for ${FRONTEND_DOMAIN} already configured at ${APACHE_CONF}. Skipping."
 elif command -v apache2 &>/dev/null || command -v httpd &>/dev/null; then
-  echo "Creating Apache vhost for ${FRONTEND_DOMAIN}..."
+  echo "Creating Apache vhost for ${FRONTEND_DOMAIN} at ${APACHE_CONF}..."
 
   # 1) HTTP-only vhost
   sudo tee "${APACHE_CONF}" >/dev/null <<APACHE_HTTP
@@ -61,11 +62,12 @@ APACHE_HTTP
   sudo apache2ctl configtest 2>/dev/null && sudo systemctl reload apache2 2>/dev/null || \
   sudo apachectl configtest 2>/dev/null && sudo systemctl reload httpd 2>/dev/null || true
 
-  # 2) Certbot (optional)
-  if [ -n "${CERTBOT_EMAIL}" ] && command -v certbot &>/dev/null; then
-    sudo certbot --apache -d "${FRONTEND_DOMAIN}" --non-interactive --agree-tos -m "${CERTBOT_EMAIL}"
+  # 2) Certbot (email: admin@the-eliteblog.com, or set CERTBOT_EMAIL env to override)
+  if ! command -v certbot &>/dev/null; then
+    echo "certbot not installed on server. Install with: sudo apt install certbot python3-certbot-apache"
   else
-    echo "CERTBOT_EMAIL not set or certbot not installed. Skipping SSL."
+    echo "Running certbot for ${FRONTEND_DOMAIN}..."
+    sudo certbot --apache -d "${FRONTEND_DOMAIN}" --non-interactive --agree-tos -m "${CERTBOT_EMAIL}"
   fi
 
   touch "${SENTINEL}"
