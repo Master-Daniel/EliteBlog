@@ -97,7 +97,7 @@ jobs:
             sudo git config --global --add safe.directory "${DEPLOY_PATH}" || true
             sudo git fetch origin "${TARGET_BRANCH}"
             sudo git reset --hard "origin/${TARGET_BRANCH}"
-            sudo git clean -fd
+            sudo git clean -fd -e node_modules
 
             sudo chown -R ${DEPLOY_USER}:${DEPLOY_USER} "${DEPLOY_PATH}" 2>/dev/null || true
 
