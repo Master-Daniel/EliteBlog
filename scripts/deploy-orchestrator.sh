@@ -9,7 +9,7 @@ ENV="${1:-production}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 WEB_ROOT="${FRONTEND_WEB_ROOT:-/var/www/elite-blog/frontend-dist}"
-FRONTEND_DOMAIN="${FRONTEND_DOMAIN:-www.the-eliteblog.com}"
+FRONTEND_DOMAIN="${FRONTEND_DOMAIN:-the-eliteblog.com}"
 APACHE_SITE_ID="${APACHE_SITE_ID:-elite-blog-frontend}"
 SENTINEL="${APP_ROOT}/.apache-domain-configured"
 
