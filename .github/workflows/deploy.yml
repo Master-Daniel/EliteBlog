@@ -74,9 +74,13 @@ jobs:
           ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} 'echo "SSH connection successful"'
 
       - name: Deploy to Production
+        env:
+          CERTBOT_EMAIL: ${{ secrets.CERTBOT_EMAIL }}
+          FRONTEND_DOMAIN: ${{ secrets.FRONTEND_DOMAIN || 'www.the-eliteblog.com' }}
+          FRONTEND_WEB_ROOT: ${{ secrets.FRONTEND_WEB_ROOT || '/var/www/elite-blog/frontend-dist' }}
         run: |
           ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} \
-            "TARGET_BRANCH=$TARGET_BRANCH DEPLOY_PATH=$DEPLOY_PATH REPO=${{ github.repository }} DEPLOY_USER=${{ secrets.USER }} bash -s" << 'EOF'
+            "TARGET_BRANCH=$TARGET_BRANCH DEPLOY_PATH=$DEPLOY_PATH REPO=${{ github.repository }} DEPLOY_USER=${{ secrets.USER }} CERTBOT_EMAIL=$CERTBOT_EMAIL FRONTEND_DOMAIN=$FRONTEND_DOMAIN FRONTEND_WEB_ROOT=$FRONTEND_WEB_ROOT bash -s" << 'EOF'
             set -e
             echo "Deploying Elite-Blog frontend to $DEPLOY_PATH on branch $TARGET_BRANCH"
 
@@ -100,7 +104,7 @@ jobs:
 
             chmod +x "${DEPLOY_PATH}/scripts/deploy-orchestrator.sh" 2>/dev/null || true
             if [ -x "${DEPLOY_PATH}/scripts/deploy-orchestrator.sh" ]; then
-              cd "${DEPLOY_PATH}" && ./scripts/deploy-orchestrator.sh production
+              cd "${DEPLOY_PATH}" && export CERTBOT_EMAIL FRONTEND_DOMAIN FRONTEND_WEB_ROOT && ./scripts/deploy-orchestrator.sh production
             else
               cd "${DEPLOY_PATH}" && npm ci --legacy-peer-deps && npm run build
               echo "Frontend build done. Copy dist/ to your web server root (e.g. FRONTEND_WEB_ROOT)."
