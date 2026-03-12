@@ -24,18 +24,22 @@ echo "Copying dist to ${WEB_ROOT}..."
 rsync -av --delete "${APP_ROOT}/dist/" "${WEB_ROOT}/" 2>/dev/null || cp -R "${APP_ROOT}/dist/"* "${WEB_ROOT}/"
 echo "Frontend deployment complete. Serve from ${WEB_ROOT}"
 
-# Apache + certbot: run only once per domain
-if [ -f "${SENTINEL}" ]; then
-  echo "Apache domain already configured (sentinel exists). Skipping."
-elif command -v apache2 &>/dev/null || command -v httpd &>/dev/null; then
+# Apache + certbot: run when vhost config is missing (not just sentinel)
+APACHE_CONF=""
+if [ -d /etc/apache2 ]; then
   APACHE_CONF="/etc/apache2/sites-available/${APACHE_SITE_ID}.conf"
-  if [ -d /etc/httpd ]; then
-    APACHE_CONF="/etc/httpd/conf.d/${APACHE_SITE_ID}.conf"
-  fi
+elif [ -d /etc/httpd ]; then
+  APACHE_CONF="/etc/httpd/conf.d/${APACHE_SITE_ID}.conf"
+fi
 
-  echo "First-time Apache + SSL setup for ${FRONTEND_DOMAIN}..."
+if [ -z "${APACHE_CONF}" ]; then
+  echo "Apache not found (no /etc/apache2 or /etc/httpd). Skipping domain config."
+elif [ -f "${APACHE_CONF}" ] && grep -q "ServerName ${FRONTEND_DOMAIN}" "${APACHE_CONF}" 2>/dev/null; then
+  echo "Apache vhost for ${FRONTEND_DOMAIN} already configured. Skipping."
+elif command -v apache2 &>/dev/null || command -v httpd &>/dev/null; then
+  echo "Creating Apache vhost for ${FRONTEND_DOMAIN}..."
 
-  # 1) HTTP-only vhost (for certbot challenge)
+  # 1) HTTP-only vhost
   sudo tee "${APACHE_CONF}" >/dev/null <<APACHE_HTTP
 <VirtualHost *:80>
     ServerName ${FRONTEND_DOMAIN}
@@ -51,18 +55,19 @@ APACHE_HTTP
 
   if [ -d /etc/apache2 ] && [ -x /usr/sbin/a2ensite ]; then
     sudo a2ensite "${APACHE_SITE_ID}" 2>/dev/null || true
+    sudo a2dissite 000-default 2>/dev/null || true
     sudo a2enmod rewrite ssl 2>/dev/null || true
   fi
   sudo apache2ctl configtest 2>/dev/null && sudo systemctl reload apache2 2>/dev/null || \
   sudo apachectl configtest 2>/dev/null && sudo systemctl reload httpd 2>/dev/null || true
 
-  # 2) Obtain certificate and let certbot add the HTTPS vhost (avoids duplicating SSL config)
+  # 2) Certbot (optional)
   if [ -n "${CERTBOT_EMAIL}" ] && command -v certbot &>/dev/null; then
     sudo certbot --apache -d "${FRONTEND_DOMAIN}" --non-interactive --agree-tos -m "${CERTBOT_EMAIL}"
   else
-    echo "CERTBOT_EMAIL not set or certbot not installed. Skipping SSL. Set CERTBOT_EMAIL and run certbot manually if needed."
+    echo "CERTBOT_EMAIL not set or certbot not installed. Skipping SSL."
   fi
 
   touch "${SENTINEL}"
-  echo "Apache domain config done for ${FRONTEND_DOMAIN} (HTTP + HTTPS via certbot). Won't run again unless ${SENTINEL} is removed."
+  echo "Apache vhost created for ${FRONTEND_DOMAIN}. Reload Apache if needed: sudo systemctl reload apache2"
 fi
