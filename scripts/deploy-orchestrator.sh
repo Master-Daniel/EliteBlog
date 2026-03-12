@@ -16,9 +16,10 @@ SENTINEL="${APP_ROOT}/.apache-domain-configured"
 
 cd "${APP_ROOT}"
 
-# Create production .env (URLs for backend api.the-eliteblog.com; other vars from env or defaults)
-echo "Creating production .env..."
-cat > "${APP_ROOT}/.env" << ENVFILE
+# Create .env only on first deploy (do not overwrite existing .env)
+if [ ! -f "${APP_ROOT}/.env" ]; then
+  echo "Creating production .env (first-time)..."
+  cat > "${APP_ROOT}/.env" << ENVFILE
 VITE_FRONTEND_URL="https://${FRONTEND_DOMAIN}"
 VITE_API_URL="https://${BACKEND_API_DOMAIN}"
 VITE_BASE_URL="https://${BACKEND_API_DOMAIN}/api"
@@ -28,6 +29,9 @@ VITE_GITHUB_CLIENT_ID="${VITE_GITHUB_CLIENT_ID:-Ov23liYY4dwJHihd3R1k}"
 VITE_GITHUB_REDIRECT_URI="https://${BACKEND_API_DOMAIN}/api/auth/github/callback"
 VITE_OPEN_AI_KEY="${VITE_OPEN_AI_KEY:-}"
 ENVFILE
+else
+  echo "Keeping existing .env (not overwriting)."
+fi
 
 echo "Installing dependencies..."
 npm ci --legacy-peer-deps --no-audit --no-fund
