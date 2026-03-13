@@ -39,7 +39,7 @@ echo "Building..."
 npm run build
 echo "Build complete. Serving from ${WEB_ROOT}"
 
-# Apache: ensure vhost exists, then always run certbot
+# Apache + certbot: single vhost file (80 + 443) serving from frontend/dist
 APACHE_CONF=""
 if [ -d /etc/apache2 ]; then
   APACHE_CONF="/etc/apache2/sites-available/${APACHE_SITE_ID}.conf"
@@ -50,9 +50,12 @@ fi
 if [ -z "${APACHE_CONF}" ]; then
   echo "Apache not found (no /etc/apache2 or /etc/httpd). Skipping."
 else
-  # 1) Create or update vhost (always write so DocumentRoot stays correct, e.g. frontend/dist)
-  echo "Creating/updating Apache vhost for ${FRONTEND_DOMAIN} at ${APACHE_CONF}..."
-  sudo tee "${APACHE_CONF}" >/dev/null <<APACHE_HTTP
+  CERT_DIR="/etc/letsencrypt/live/${FRONTEND_DOMAIN}"
+
+  # 1) If no cert yet, create HTTP-only vhost and obtain certificate via webroot
+  if [ ! -d "${CERT_DIR}" ] && command -v certbot &>/dev/null; then
+    echo "No existing certificate for ${FRONTEND_DOMAIN}. Creating HTTP vhost and requesting cert..."
+    sudo tee "${APACHE_CONF}" >/dev/null <<APACHE_HTTP_ONLY
 <VirtualHost *:80>
     ServerName ${FRONTEND_DOMAIN}
     DocumentRoot ${WEB_ROOT}
@@ -63,7 +66,56 @@ else
         FallbackResource /index.html
     </Directory>
 </VirtualHost>
-APACHE_HTTP
+APACHE_HTTP_ONLY
+
+    if [ -d /etc/apache2 ] && [ -x /usr/sbin/a2ensite ]; then
+      sudo a2ensite "${APACHE_SITE_ID}" 2>/dev/null || true
+      sudo a2dissite 000-default 2>/dev/null || true
+      sudo a2enmod rewrite ssl 2>/dev/null || true
+    fi
+    sudo apache2ctl configtest 2>/dev/null && sudo systemctl reload apache2 2>/dev/null || \
+    sudo apachectl configtest 2>/dev/null && sudo systemctl reload httpd 2>/dev/null || true
+
+    echo "Requesting certificate for ${FRONTEND_DOMAIN} with certbot (webroot)..."
+    sudo certbot certonly --webroot -w "${WEB_ROOT}" \
+      -d "${FRONTEND_DOMAIN}" --non-interactive --agree-tos -m "${CERTBOT_EMAIL}" || true
+  fi
+
+  # 2) Write final vhost with both HTTP and HTTPS in a single file
+  if [ -d "${CERT_DIR}" ]; then
+    echo "Writing combined HTTP/HTTPS vhost for ${FRONTEND_DOMAIN} at ${APACHE_CONF}..."
+    sudo tee "${APACHE_CONF}" >/dev/null <<APACHE_FULL
+<VirtualHost *:80>
+    ServerName ${FRONTEND_DOMAIN}
+    DocumentRoot ${WEB_ROOT}
+    <Directory ${WEB_ROOT}>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+        FallbackResource /index.html
+    </Directory>
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName ${FRONTEND_DOMAIN}
+    DocumentRoot ${WEB_ROOT}
+    <Directory ${WEB_ROOT}>
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+        FallbackResource /index.html
+    </Directory>
+
+    SSLEngine on
+    SSLCertificateFile /etc/letsencrypt/live/${FRONTEND_DOMAIN}/fullchain.pem
+    SSLCertificateKeyFile /etc/letsenscrypt/live/${FRONTEND_DOMAIN}/privkey.pem
+    Include /etc/letsencrypt/options-ssl-apache.conf
+</VirtualHost>
+APACHE_FULL
+  else
+    echo "Certificate directory ${CERT_DIR} not found. Keeping HTTP-only vhost for ${FRONTEND_DOMAIN}."
+  fi
+
   if [ -d /etc/apache2 ] && [ -x /usr/sbin/a2ensite ]; then
     sudo a2ensite "${APACHE_SITE_ID}" 2>/dev/null || true
     sudo a2dissite 000-default 2>/dev/null || true
@@ -71,14 +123,4 @@ APACHE_HTTP
   fi
   sudo apache2ctl configtest 2>/dev/null && sudo systemctl reload apache2 2>/dev/null || \
   sudo apachectl configtest 2>/dev/null && sudo systemctl reload httpd 2>/dev/null || true
-
-  # 2) Always run certbot (get cert or renew; idempotent)
-  if command -v certbot &>/dev/null || [ -x /usr/bin/certbot ]; then
-    echo "Running certbot for ${FRONTEND_DOMAIN}..."
-    sudo certbot --apache -d "${FRONTEND_DOMAIN}" --non-interactive --agree-tos -m "${CERTBOT_EMAIL}"
-  else
-    echo "certbot not found. Install: sudo apt install certbot python3-certbot-apache"
-  fi
-
-  touch "${SENTINEL}"
 fi
