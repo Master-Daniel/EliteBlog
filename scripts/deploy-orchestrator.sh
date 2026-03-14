@@ -33,11 +33,17 @@ else
   echo "Keeping existing .env (not overwriting)."
 fi
 
-echo "Installing dependencies..."
-npm ci --legacy-peer-deps --no-audit --no-fund
-echo "Building..."
-npm run build
-echo "Build complete. Serving from ${WEB_ROOT}"
+# When CI builds and uploads dist, we skip install/build to avoid long-running SSH (broken pipe)
+if [ -n "${SKIP_BUILD}" ]; then
+  echo "SKIP_BUILD set: using pre-built dist from CI (skipping npm install and build)."
+else
+  echo "Installing dependencies..."
+  npm ci --legacy-peer-deps --no-audit --no-fund
+  echo "Building..."
+  npm run build
+  echo "Build complete."
+fi
+echo "Serving from ${WEB_ROOT}"
 
 # Apache + certbot: single vhost file (80 + 443) serving from frontend/dist
 APACHE_CONF=""
@@ -108,7 +114,7 @@ APACHE_HTTP_ONLY
 
     SSLEngine on
     SSLCertificateFile /etc/letsencrypt/live/${FRONTEND_DOMAIN}/fullchain.pem
-    SSLCertificateKeyFile /etc/letsenscrypt/live/${FRONTEND_DOMAIN}/privkey.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/${FRONTEND_DOMAIN}/privkey.pem
     Include /etc/letsencrypt/options-ssl-apache.conf
 </VirtualHost>
 APACHE_FULL
