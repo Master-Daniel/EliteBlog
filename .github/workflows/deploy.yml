@@ -73,6 +73,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: frontend-dist
+          path: frontend-dist
 
       - name: Add SSH key for deploy
         uses: webfactory/ssh-agent@v0.9.0
