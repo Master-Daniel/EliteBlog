@@ -82,6 +82,7 @@ else
     sudo tee "${APACHE_CONF}" >/dev/null <<APACHE_HTTP_ONLY
 <VirtualHost *:80>
     ServerName ${FRONTEND_DOMAIN}
+    ServerAlias *
     DocumentRoot ${WEB_ROOT}
     <Directory ${WEB_ROOT}>
         Options -Indexes +FollowSymLinks
@@ -111,6 +112,7 @@ APACHE_HTTP_ONLY
     sudo tee "${APACHE_CONF}" >/dev/null <<APACHE_FULL
 <VirtualHost *:80>
     ServerName ${FRONTEND_DOMAIN}
+    ServerAlias *
     DocumentRoot ${WEB_ROOT}
     <Directory ${WEB_ROOT}>
         Options -Indexes +FollowSymLinks
@@ -122,6 +124,7 @@ APACHE_HTTP_ONLY
 
 <VirtualHost *:443>
     ServerName ${FRONTEND_DOMAIN}
+    ServerAlias *
     DocumentRoot ${WEB_ROOT}
     <Directory ${WEB_ROOT}>
         Options -Indexes +FollowSymLinks
