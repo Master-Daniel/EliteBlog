@@ -45,6 +45,24 @@ else
 fi
 echo "Serving from ${WEB_ROOT}"
 
+# Ensure Apache can read dist and SPA routing works
+if [ -d "${WEB_ROOT}" ]; then
+  chmod -R o+rX "${WEB_ROOT}" 2>/dev/null || sudo chmod -R o+rX "${WEB_ROOT}"
+  if [ ! -f "${WEB_ROOT}/index.html" ]; then
+    echo "Warning: ${WEB_ROOT}/index.html not found. Check DocumentRoot and rsync."
+  else
+    # .htaccess fallback for SPA (in case FallbackResource in vhost is not applied)
+    cat > "${WEB_ROOT}/.htaccess" << 'HTACCESS'
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+HTACCESS
+  fi
+fi
+
 # Apache + certbot: single vhost file (80 + 443) serving from frontend/dist
 APACHE_CONF=""
 if [ -d /etc/apache2 ]; then
