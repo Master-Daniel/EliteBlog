@@ -41,6 +41,16 @@ jobs:
         run: npm run build
         env:
           CI: 'true'
+          VITE_FRONTEND_URL: https://${{ secrets.FRONTEND_DOMAIN || 'the-eliteblog.com' }}
+          VITE_API_URL: https://${{ secrets.BACKEND_API_DOMAIN || 'api.the-eliteblog.com' }}
+          VITE_BASE_URL: https://${{ secrets.BACKEND_API_DOMAIN || 'api.the-eliteblog.com' }}/api
+          VITE_GITHUB_REDIRECT_URI: https://${{ secrets.BACKEND_API_DOMAIN || 'api.the-eliteblog.com' }}/api/auth/github/callback
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist/
 
       - name: Add SSH key for deploy (optional private deps)
         uses: webfactory/ssh-agent@v0.9.0
@@ -56,6 +66,14 @@ jobs:
       DEPLOY_PATH: /var/www/elite-blog/frontend
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+
       - name: Add SSH key for deploy
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -73,40 +91,44 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} 'echo "SSH connection successful"'
 
-      - name: Deploy to Production
+      - name: Update repo on server
+        run: |
+          ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} \
+            "TARGET_BRANCH=$TARGET_BRANCH DEPLOY_PATH=$DEPLOY_PATH REPO=${{ github.repository }} DEPLOY_USER=${{ secrets.USER }} bash -s" << 'EOF'
+            set -e
+            if [ ! -d "${DEPLOY_PATH}/.git" ]; then
+              echo "First-time deployment - cloning repository (public)..."
+              sudo mkdir -p "${DEPLOY_PATH}"
+              sudo git clone "https://github.com/${REPO}.git" "${DEPLOY_PATH}"
+              cd "${DEPLOY_PATH}" && sudo git checkout "${TARGET_BRANCH}"
+              echo "Repository cloned."
+            else
+              cd "${DEPLOY_PATH}"
+              sudo git config --global --add safe.directory "${DEPLOY_PATH}" || true
+              sudo git fetch origin "${TARGET_BRANCH}"
+              sudo git reset --hard "origin/${TARGET_BRANCH}"
+              sudo git clean -fd -e node_modules
+            fi
+            sudo chown -R ${DEPLOY_USER}:${DEPLOY_USER} "${DEPLOY_PATH}" 2>/dev/null || true
+          EOF
+
+      - name: Rsync dist to server
+        run: |
+          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }}" \
+            ./frontend-dist/ \
+            ${{ secrets.USER }}@${{ secrets.SERVER_IP }}:${{ env.DEPLOY_PATH }}/dist/
+
+      - name: Configure Apache and finish deploy
         env:
           FRONTEND_DOMAIN: ${{ secrets.FRONTEND_DOMAIN || 'the-eliteblog.com' }}
           BACKEND_API_DOMAIN: ${{ secrets.BACKEND_API_DOMAIN || 'api.the-eliteblog.com' }}
         run: |
           ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} \
-            "TARGET_BRANCH=$TARGET_BRANCH DEPLOY_PATH=$DEPLOY_PATH REPO=${{ github.repository }} DEPLOY_USER=${{ secrets.USER }} FRONTEND_DOMAIN=$FRONTEND_DOMAIN BACKEND_API_DOMAIN=$BACKEND_API_DOMAIN bash -s" << 'EOF'
+            "DEPLOY_PATH=$DEPLOY_PATH FRONTEND_DOMAIN=$FRONTEND_DOMAIN BACKEND_API_DOMAIN=$BACKEND_API_DOMAIN SKIP_BUILD=1 bash -s" << 'EOF'
             set -e
-            echo "Deploying Elite-Blog frontend to $DEPLOY_PATH on branch $TARGET_BRANCH"
-
-            if [ ! -d "${DEPLOY_PATH}/.git" ]; then
-              echo "First-time deployment - cloning repository (public)..."
-              sudo mkdir -p "${DEPLOY_PATH}"
-              sudo git clone "https://github.com/${REPO}.git" "${DEPLOY_PATH}"
-              cd "${DEPLOY_PATH}"
-              sudo git checkout "${TARGET_BRANCH}"
-              echo "Repository cloned."
-            else
-              cd "${DEPLOY_PATH}"
-            fi
-
-            sudo git config --global --add safe.directory "${DEPLOY_PATH}" || true
-            sudo git fetch origin "${TARGET_BRANCH}"
-            sudo git reset --hard "origin/${TARGET_BRANCH}"
-            sudo git clean -fd -e node_modules
-
-            sudo chown -R ${DEPLOY_USER}:${DEPLOY_USER} "${DEPLOY_PATH}" 2>/dev/null || true
-
             chmod +x "${DEPLOY_PATH}/scripts/deploy-orchestrator.sh" 2>/dev/null || true
             if [ -x "${DEPLOY_PATH}/scripts/deploy-orchestrator.sh" ]; then
-              cd "${DEPLOY_PATH}" && export FRONTEND_DOMAIN BACKEND_API_DOMAIN && ./scripts/deploy-orchestrator.sh production
-            else
-              cd "${DEPLOY_PATH}" && npm ci --legacy-peer-deps && npm run build
-              echo "Frontend build done."
+              cd "${DEPLOY_PATH}" && export FRONTEND_DOMAIN BACKEND_API_DOMAIN SKIP_BUILD && ./scripts/deploy-orchestrator.sh production
             fi
             echo "Frontend deployment completed."
           EOF
