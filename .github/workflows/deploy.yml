@@ -75,6 +75,15 @@ jobs:
           name: frontend-dist
           path: frontend-dist
 
+      - name: Set frontend deploy path (monorepo vs root)
+        id: frontend-path
+        run: |
+          if [ -f frontend/package.json ]; then
+            echo "subdir=frontend" >> $GITHUB_OUTPUT
+          else
+            echo "subdir=." >> $GITHUB_OUTPUT
+          fi
+
       - name: Add SSH key for deploy
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -115,21 +124,30 @@ jobs:
 
       - name: Rsync dist to server
         run: |
+          DEST="${{ env.DEPLOY_PATH }}/${{ steps.frontend-path.outputs.subdir }}/dist"
           rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }}" \
             ./frontend-dist/ \
-            ${{ secrets.USER }}@${{ secrets.SERVER_IP }}:${{ env.DEPLOY_PATH }}/dist/
+            ${{ secrets.USER }}@${{ secrets.SERVER_IP }}:${DEST}/
 
       - name: Configure Apache and finish deploy
         env:
           FRONTEND_DOMAIN: ${{ secrets.FRONTEND_DOMAIN || 'the-eliteblog.com' }}
           BACKEND_API_DOMAIN: ${{ secrets.BACKEND_API_DOMAIN || 'api.the-eliteblog.com' }}
+          FRONTEND_SUBDIR: ${{ steps.frontend-path.outputs.subdir }}
         run: |
           ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} \
-            "DEPLOY_PATH=$DEPLOY_PATH FRONTEND_DOMAIN=$FRONTEND_DOMAIN BACKEND_API_DOMAIN=$BACKEND_API_DOMAIN SKIP_BUILD=1 bash -s" << 'EOF'
+            "DEPLOY_PATH=$DEPLOY_PATH FRONTEND_DOMAIN=$FRONTEND_DOMAIN BACKEND_API_DOMAIN=$BACKEND_API_DOMAIN SKIP_BUILD=1 FRONTEND_SUBDIR=$FRONTEND_SUBDIR bash -s" << 'EOF'
             set -e
-            chmod +x "${DEPLOY_PATH}/scripts/deploy-orchestrator.sh" 2>/dev/null || true
-            if [ -x "${DEPLOY_PATH}/scripts/deploy-orchestrator.sh" ]; then
+            APP_DIR="${DEPLOY_PATH}/${FRONTEND_SUBDIR}"
+            SCRIPT="${APP_DIR}/scripts/deploy-orchestrator.sh"
+            if [ -x "${SCRIPT}" ]; then
+              chmod +x "${SCRIPT}" 2>/dev/null || true
+              cd "${APP_DIR}" && export FRONTEND_DOMAIN BACKEND_API_DOMAIN SKIP_BUILD && ./scripts/deploy-orchestrator.sh production
+            elif [ -x "${DEPLOY_PATH}/scripts/deploy-orchestrator.sh" ]; then
+              chmod +x "${DEPLOY_PATH}/scripts/deploy-orchestrator.sh" 2>/dev/null || true
               cd "${DEPLOY_PATH}" && export FRONTEND_DOMAIN BACKEND_API_DOMAIN SKIP_BUILD && ./scripts/deploy-orchestrator.sh production
+            else
+              echo "::warning::No deploy-orchestrator.sh found under ${APP_DIR}/scripts or ${DEPLOY_PATH}/scripts"
             fi
             echo "Frontend deployment completed."
           EOF
