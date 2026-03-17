@@ -163,34 +163,42 @@ jobs:
               chmod +x "${SCRIPT}"
               cd "${APP_DIR}" && export FRONTEND_DOMAIN BACKEND_API_DOMAIN SKIP_BUILD && ./scripts/deploy-orchestrator.sh production
             else
-              echo "::warning::No deploy-orchestrator.sh found; configuring Apache from workflow (fallback)."
-              APACHE_SITE_ID="${APACHE_SITE_ID:-elite-blog-frontend}"
-              if [ -d /etc/apache2 ]; then
-                APACHE_CONF="/etc/apache2/sites-available/${APACHE_SITE_ID}.conf"
-              elif [ -d /etc/httpd ]; then
-                APACHE_CONF="/etc/httpd/conf.d/${APACHE_SITE_ID}.conf"
+              echo "::warning::No deploy-orchestrator.sh found; configuring Apache from workflow (fallback, once only)."
+              SENTINEL="$(dirname "${DEPLOY_PATH}")/.apache-blog-frontend-configured"
+              if [ -f "${SENTINEL}" ]; then
+                echo "Apache already configured (sentinel exists). Skipping to avoid affecting other sites."
               else
-                APACHE_CONF=""
-              fi
-              if [ -n "${APACHE_CONF}" ]; then
-                {
-                  echo '<VirtualHost *:80>'
-                  echo "    ServerName ${FRONTEND_DOMAIN}"
-                  echo "    DocumentRoot ${WEB_ROOT_ABS}"
-                  echo "    <Directory \"${WEB_ROOT_ABS}\">"
-                  echo '        Options -Indexes +FollowSymLinks'
-                  echo '        AllowOverride All'
-                  echo '        Require all granted'
-                  echo '        FallbackResource /index.html'
-                  echo '    </Directory>'
-                  echo '</VirtualHost>'
-                } | sudo tee "${APACHE_CONF}" >/dev/null
-                if [ -d /etc/apache2 ] && [ -x /usr/sbin/a2ensite ]; then
-                  sudo a2ensite "${APACHE_SITE_ID}" 2>/dev/null || true
-                  sudo a2enmod rewrite 2>/dev/null || true
+                APACHE_SITE_ID="${APACHE_SITE_ID:-elite-blog-frontend}"
+                if [ -d /etc/apache2 ]; then
+                  APACHE_CONF="/etc/apache2/sites-available/${APACHE_SITE_ID}.conf"
+                elif [ -d /etc/httpd ]; then
+                  APACHE_CONF="/etc/httpd/conf.d/${APACHE_SITE_ID}.conf"
+                else
+                  APACHE_CONF=""
                 fi
-                sudo apache2ctl configtest 2>/dev/null && sudo systemctl reload apache2 2>/dev/null || \
-                sudo apachectl configtest 2>/dev/null && sudo systemctl reload httpd 2>/dev/null || true
+                if [ -n "${APACHE_CONF}" ]; then
+                  {
+                    echo '<VirtualHost *:80>'
+                    echo "    ServerName ${FRONTEND_DOMAIN}"
+                    echo "    DocumentRoot ${WEB_ROOT_ABS}"
+                    echo "    <Directory \"${WEB_ROOT_ABS}\">"
+                    echo '        Options -Indexes +FollowSymLinks'
+                    echo '        AllowOverride All'
+                    echo '        Require all granted'
+                    echo '        FallbackResource /index.html'
+                    echo '    </Directory>'
+                    echo '</VirtualHost>'
+                  } | sudo tee "${APACHE_CONF}" >/dev/null
+                  if [ -d /etc/apache2 ] && [ -x /usr/sbin/a2ensite ]; then
+                    sudo a2ensite "${APACHE_SITE_ID}" 2>/dev/null || true
+                    sudo a2ensite 000-default 2>/dev/null || true
+                    sudo a2enmod rewrite 2>/dev/null || true
+                  fi
+                  sudo apache2ctl configtest 2>/dev/null && sudo systemctl reload apache2 2>/dev/null || \
+                  sudo apachectl configtest 2>/dev/null && sudo systemctl reload httpd 2>/dev/null || true
+                  touch "${SENTINEL}"
+                  echo "Apache configured once; sentinel at ${SENTINEL}. Future deploys will skip."
+                fi
               fi
             fi
             echo "--- Verifying deployment ---"
