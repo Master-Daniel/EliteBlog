@@ -84,7 +84,6 @@ else
     sudo tee "${APACHE_CONF}" >/dev/null <<APACHE_HTTP_ONLY
 <VirtualHost *:80>
     ServerName ${FRONTEND_DOMAIN}
-    ServerAlias *
     DocumentRoot ${WEB_ROOT_ABS}
     <Directory "${WEB_ROOT_ABS}">
         Options -Indexes +FollowSymLinks
@@ -97,7 +96,6 @@ APACHE_HTTP_ONLY
 
     if [ -d /etc/apache2 ] && [ -x /usr/sbin/a2ensite ]; then
       sudo a2ensite "${APACHE_SITE_ID}" 2>/dev/null || true
-      sudo a2dissite 000-default 2>/dev/null || true
       sudo a2enmod rewrite ssl 2>/dev/null || true
     fi
     sudo apache2ctl configtest 2>/dev/null && sudo systemctl reload apache2 2>/dev/null || \
@@ -114,7 +112,6 @@ APACHE_HTTP_ONLY
     sudo tee "${APACHE_CONF}" >/dev/null <<APACHE_FULL
 <VirtualHost *:80>
     ServerName ${FRONTEND_DOMAIN}
-    ServerAlias *
     DocumentRoot ${WEB_ROOT_ABS}
     <Directory "${WEB_ROOT_ABS}">
         Options -Indexes +FollowSymLinks
@@ -126,7 +123,6 @@ APACHE_HTTP_ONLY
 
 <VirtualHost *:443>
     ServerName ${FRONTEND_DOMAIN}
-    ServerAlias *
     DocumentRoot ${WEB_ROOT_ABS}
     <Directory "${WEB_ROOT_ABS}">
         Options -Indexes +FollowSymLinks
@@ -147,7 +143,6 @@ APACHE_FULL
 
   if [ -d /etc/apache2 ] && [ -x /usr/sbin/a2ensite ]; then
     sudo a2ensite "${APACHE_SITE_ID}" 2>/dev/null || true
-    sudo a2dissite 000-default 2>/dev/null || true
     sudo a2enmod rewrite ssl 2>/dev/null || true
   fi
   sudo apache2ctl configtest 2>/dev/null && sudo systemctl reload apache2 2>/dev/null || \
