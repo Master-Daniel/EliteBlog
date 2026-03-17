@@ -8,8 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate:sitemap": "node generateSitemap.js",
-    "fetch:tinymce-pixel": "node scripts/fetch-tinymce-chiffer-pixel.js"
+    "generate:sitemap": "node generateSitemap.js"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
