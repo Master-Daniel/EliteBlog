@@ -76,10 +76,10 @@ const TextEditor = forwardRef(({ onChange, initialContent }: TextEditorProps, re
                 icons_url: "/icons/default/icons.min.js",
                 height: 500,
                 plugins:
-                    'importword exportword exportpdf ai preview casechange importcss searchreplace autolink autosave save directionality advcode visualblocks visualchars fullscreen image link math media mediaembed codesample table charmap pagebreak nonbreaking anchor tableofcontents insertdatetime advlist lists checklist wordcount tinymcespellchecker a11ychecker editimage formatpainter permanentpen pageembed charmap quickbars linkchecker advtable footnotes mergetags autocorrect typography advtemplate markdown',
+                    'importword exportword exportpdf ai preview casechange importcss searchreplace autolink autosave save directionality advcode visualblocks visualchars fullscreen image link math media mediaembed codesample table charmap pagebreak nonbreaking anchor tableofcontents insertdatetime advlist lists checklist wordcount a11ychecker editimage formatpainter permanentpen pageembed charmap quickbars linkchecker advtable footnotes mergetags typography advtemplate markdown',
                 mobile: {
                     plugins:
-                        'ai preview casechange importcss searchreplace autolink autosave save directionality advcode visualblocks visualchars fullscreen image link math media mediaembed codesample table charmap pagebreak nonbreaking anchor tableofcontents insertdatetime advlist lists checklist wordcount tinymcespellchecker a11ychecker formatpainter pageembed charmap mentions quickbars linkchecker advtable footnotes mergetags autocorrect typography advtemplate',
+                        'ai preview casechange importcss searchreplace autolink autosave save directionality advcode visualblocks visualchars fullscreen image link math media mediaembed codesample table charmap pagebreak nonbreaking anchor tableofcontents insertdatetime advlist lists checklist wordcount a11ychecker formatpainter pageembed charmap mentions quickbars linkchecker advtable footnotes mergetags typography advtemplate',
                 },
                 images_upload_handler: handleImageUpload,
                 automatic_uploads: true,
@@ -213,12 +213,11 @@ const TextEditor = forwardRef(({ onChange, initialContent }: TextEditorProps, re
                     });
                 },
                 quickbars_selection_toolbar: 'bold italic | quicklink h2 h3 blockquote quickimage quicktable',
-                autocorrect_capitalize: true,
                 toolbar_mode: 'sliding',
                 contextmenu: 'link image editimage table configurepermanentpen',
                 menubar: 'file edit view insert format tools table tc',
                 toolbar:
-                    "undo redo | importword exportword exportpdf | revisionhistory | aidialog aishortcuts | blocks fontsizeinput | bold italic | align numlist bullist | link image | table math media pageembed | lineheight  outdent indent | strikethrough forecolor backcolor formatpainter removeformat | charmap checklist | code fullscreen preview | save print | pagebreak anchor codesample footnotes mergetags | addtemplate inserttemplate | ltr rtl casechange | spellcheckdialog a11ycheck", // addcomment showcomments
+                    "undo redo | importword exportword exportpdf | revisionhistory | aidialog aishortcuts | blocks fontsizeinput | bold italic | align numlist bullist | link image | table math media pageembed | lineheight  outdent indent | strikethrough forecolor backcolor formatpainter removeformat | charmap checklist | code fullscreen preview | save print | pagebreak anchor codesample footnotes mergetags | addtemplate inserttemplate | ltr rtl casechange | a11ycheck", // addcomment showcomments
                 content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
                 // images_upload_handler: handleImageUpload // Uncomment if image upload handler is provided
             }}
