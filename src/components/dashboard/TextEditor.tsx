@@ -14,6 +14,8 @@ interface TextEditorProps {
     initialContent?: string;
 }
 
+const baseUrl = import.meta.env.VITE_FRONTEND_URL || (typeof window !== "undefined" ? window.location.origin : "");
+
 const TextEditor = forwardRef(({ onChange, initialContent }: TextEditorProps, ref) => {
     const editorRef = useRef<any>(null);
 
@@ -65,7 +67,11 @@ const TextEditor = forwardRef(({ onChange, initialContent }: TextEditorProps, re
             }}
             initialValue={initialContent || "<p>Start creating something amazing...</p>"}
             init={{
-                base_url: import.meta.env.VITE_FRONTEND_URL || (typeof window !== "undefined" ? window.location.origin : ""),
+                base_url: baseUrl,
+                skin: "silver",
+                skin_url: `${baseUrl}/themes/silver`,
+                icons: "default",
+                icons_url: `${baseUrl}/icons/default/icons.min.js`,
                 height: 500,
                 plugins:
                     'importword exportword exportpdf ai preview powerpaste casechange importcss searchreplace autolink autosave save directionality advcode visualblocks visualchars fullscreen image link math media mediaembed codesample table charmap pagebreak nonbreaking anchor tableofcontents insertdatetime advlist lists checklist wordcount tinymcespellchecker a11ychecker editimage help formatpainter permanentpen pageembed charmap quickbars linkchecker emoticons advtable footnotes mergetags autocorrect typography advtemplate markdown',
@@ -205,7 +211,6 @@ const TextEditor = forwardRef(({ onChange, initialContent }: TextEditorProps, re
                     });
                 },
                 quickbars_selection_toolbar: 'bold italic | quicklink h2 h3 blockquote quickimage quicktable',
-                skin: 'oxide-dark',
                 autocorrect_capitalize: true,
                 toolbar_mode: 'sliding',
                 contextmenu: 'link image editimage table configurepermanentpen',
