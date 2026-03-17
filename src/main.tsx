@@ -12,18 +12,30 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 // Create clients
 const queryClient = new QueryClient();
 
+const googleClientId = import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID as string | undefined;
 const GoogleOAuth: React.FC<{ clientId: string; children: React.ReactNode }> =
   GoogleOAuthProvider as unknown as React.FC<{ clientId: string; children: React.ReactNode }>;
+
+const app = (
+  <RouterProvider router={routes} />
+);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <Provider store={store}>
       <PersistGate persistor={persistor}>
         <QueryClientProvider client={queryClient}>
-          <GoogleOAuth clientId={import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID}>
-            <RouterProvider router={routes} />
-            <Toaster />
-          </GoogleOAuth>
+          {googleClientId ? (
+            <GoogleOAuth clientId={googleClientId}>
+              {app}
+              <Toaster />
+            </GoogleOAuth>
+          ) : (
+            <>
+              {app}
+              <Toaster />
+            </>
+          )}
         </QueryClientProvider>
       </PersistGate>
     </Provider>
