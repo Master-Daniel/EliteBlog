@@ -62,7 +62,6 @@ const TextEditor = forwardRef(({ onChange, initialContent }: TextEditorProps, re
             <Editor
                 tinymceScriptSrc="/tinymce.min.js"
                 onInit={(_, editor) => (editorRef.current = editor)}
-                onLoadError={(e) => console.error("TinyMCE load error:", e)}
                 onEditorChange={() => {
                 if (editorRef.current) {
                     onChange(editorRef.current.getContent())
