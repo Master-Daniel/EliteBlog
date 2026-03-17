@@ -14,7 +14,8 @@ WEB_ROOT_ABS="$(cd "${APP_ROOT}" && cd dist 2>/dev/null && pwd || echo "${WEB_RO
 FRONTEND_DOMAIN="${FRONTEND_DOMAIN:-the-eliteblog.com}"
 BACKEND_API_DOMAIN="${BACKEND_API_DOMAIN:-api.the-eliteblog.com}"
 APACHE_SITE_ID="${APACHE_SITE_ID:-elite-blog-frontend}"
-SENTINEL="${APP_ROOT}/.apache-domain-configured"
+# Sentinel outside repo so Apache config runs only once; survives git clean
+SENTINEL="$(dirname "${APP_ROOT}")/.apache-blog-frontend-configured"
 
 cd "${APP_ROOT}"
 
@@ -65,7 +66,7 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . /index.html [L]
 HTACCESS
 
-# Apache + certbot: single vhost file (80 + 443) serving from frontend/dist
+# Apache + certbot: single vhost file (80 + 443) serving from frontend/dist (run only once)
 APACHE_CONF=""
 if [ -d /etc/apache2 ]; then
   APACHE_CONF="/etc/apache2/sites-available/${APACHE_SITE_ID}.conf"
@@ -73,7 +74,9 @@ elif [ -d /etc/httpd ]; then
   APACHE_CONF="/etc/httpd/conf.d/${APACHE_SITE_ID}.conf"
 fi
 
-if [ -z "${APACHE_CONF}" ]; then
+if [ -f "${SENTINEL}" ]; then
+  echo "Apache already configured for this app (sentinel exists). Skipping vhost/certbot to avoid affecting other sites."
+elif [ -z "${APACHE_CONF}" ]; then
   echo "Apache not found (no /etc/apache2 or /etc/httpd). Skipping."
 else
   CERT_DIR="/etc/letsencrypt/live/${FRONTEND_DOMAIN}"
@@ -96,6 +99,7 @@ APACHE_HTTP_ONLY
 
     if [ -d /etc/apache2 ] && [ -x /usr/sbin/a2ensite ]; then
       sudo a2ensite "${APACHE_SITE_ID}" 2>/dev/null || true
+      sudo a2ensite 000-default 2>/dev/null || true
       sudo a2enmod rewrite ssl 2>/dev/null || true
     fi
     sudo apache2ctl configtest 2>/dev/null && sudo systemctl reload apache2 2>/dev/null || \
@@ -143,8 +147,11 @@ APACHE_FULL
 
   if [ -d /etc/apache2 ] && [ -x /usr/sbin/a2ensite ]; then
     sudo a2ensite "${APACHE_SITE_ID}" 2>/dev/null || true
+    sudo a2ensite 000-default 2>/dev/null || true
     sudo a2enmod rewrite ssl 2>/dev/null || true
   fi
   sudo apache2ctl configtest 2>/dev/null && sudo systemctl reload apache2 2>/dev/null || \
   sudo apachectl configtest 2>/dev/null && sudo systemctl reload httpd 2>/dev/null || true
+  touch "${SENTINEL}"
+  echo "Apache configured once; sentinel created at ${SENTINEL}. Future deploys will skip Apache config."
 fi
