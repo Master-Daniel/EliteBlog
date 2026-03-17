@@ -187,7 +187,6 @@ jobs:
                 } | sudo tee "${APACHE_CONF}" >/dev/null
                 if [ -d /etc/apache2 ] && [ -x /usr/sbin/a2ensite ]; then
                   sudo a2ensite "${APACHE_SITE_ID}" 2>/dev/null || true
-                  sudo a2dissite 000-default 2>/dev/null || true
                   sudo a2enmod rewrite 2>/dev/null || true
                 fi
                 sudo apache2ctl configtest 2>/dev/null && sudo systemctl reload apache2 2>/dev/null || \
