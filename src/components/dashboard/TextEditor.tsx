@@ -65,6 +65,7 @@ const TextEditor = forwardRef(({ onChange, initialContent }: TextEditorProps, re
             }}
             initialValue={initialContent || "<p>Start creating something amazing...</p>"}
             init={{
+                base_url: import.meta.env.VITE_FRONTEND_URL || (typeof window !== "undefined" ? window.location.origin : ""),
                 height: 500,
                 plugins:
                     'importword exportword exportpdf ai preview powerpaste casechange importcss searchreplace autolink autosave save directionality advcode visualblocks visualchars fullscreen image link math media mediaembed codesample table charmap pagebreak nonbreaking anchor tableofcontents insertdatetime advlist lists checklist wordcount tinymcespellchecker a11ychecker editimage help formatpainter permanentpen pageembed charmap quickbars linkchecker emoticons advtable footnotes mergetags autocorrect typography advtemplate markdown',
