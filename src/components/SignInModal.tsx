@@ -6,10 +6,48 @@ import { setCookie } from "../utils/custom-functions";
 import { useDispatch } from "react-redux";
 import { setIsLoggedIn, setUserData } from "../redux/slices/globalSlice";
 
+const hasGoogleClientId = Boolean(import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID);
+
 interface SignInModalProps {
     isOpen: boolean;
     onClose: () => void;
 }
+
+/** Only rendered when Google OAuth is configured; uses useGoogleLogin so must be inside GoogleOAuthProvider */
+const GoogleSignInButton: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+    const dispatch = useDispatch();
+    const handleGoogleLogin = useGoogleLogin({
+        onSuccess: async (credentialResponse) => {
+            try {
+                const response = await axiosInstance.post("/auth/google/token", {
+                    access_token: credentialResponse.access_token,
+                });
+                if (response.data && response.data.user) {
+                    const { token, ...userData } = response.data.user;
+                    setCookie("elite-blog-token", token, 1440);
+                    dispatch(setUserData(userData));
+                    dispatch(setIsLoggedIn(true));
+                    onClose();
+                }
+            } catch (error) {
+                console.error("Error authenticating with Google:", error);
+            }
+        },
+        onError: () => console.error("Google login failed"),
+    });
+    return (
+        <button
+            onClick={() => handleGoogleLogin()}
+            className="w-full cursor-pointer py-3 flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition focus:ring-2 focus:ring-red-400 !important"
+        >
+            <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5">
+                <title>Google</title>
+                <path fill="currentColor" d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
+            </svg>
+            Sign in with Google
+        </button>
+    );
+};
 
 const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => {
 
@@ -22,29 +60,6 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => {
         },
         [onClose]
     );
-
-    const handleGoogleLogin = useGoogleLogin({
-        onSuccess: async (credentialResponse) => {
-            try {
-                const response = await axiosInstance.post("/auth/google/token", {
-                    access_token: credentialResponse.access_token,
-                });
-
-                if (response.data && response.data.user) {
-                    const { token, ...userData } = response.data.user;
-                    setCookie("elite-blog-token", token, 1440);
-                    dispatch(setUserData(userData));
-                    dispatch(setIsLoggedIn(true));
-                    onClose();
-                }
-            } catch (error) {
-                console.error("Error authenticating with Google:", error);
-            }
-        },
-        onError: () => {
-            console.error("Google login failed");
-        },
-    });
 
     const handleGitHubLogin = () => {
         // Retrieve your GitHub OAuth settings from environment variables
@@ -115,24 +130,7 @@ const SignInModal: React.FC<SignInModalProps> = ({ isOpen, onClose }) => {
                 </h2>
 
                 <div className="space-y-4">
-                    <button
-                        onClick={() => handleGoogleLogin()}
-                        className="w-full cursor-pointer py-3 flex items-center justify-center gap-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition focus:ring-2 focus:ring-red-400 !important"
-                    >
-                        <svg
-                            role="img"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="w-5 h-5"
-                        >
-                            <title>Google</title>
-                            <path
-                                fill="currentColor"
-                                d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
-                            />
-                        </svg>
-                        Sign in with Google
-                    </button>
+                    {hasGoogleClientId && <GoogleSignInButton onClose={onClose} />}
                     <button
                         onClick={handleGitHubLogin}
                         className="w-full cursor-pointer py-3 flex items-center justify-center gap-3 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-lg transition focus:ring-2 focus:ring-gray-600 dark:bg-gray-200 dark:hover:bg-gray-300 dark:text-gray-900 dark:focus:ring-gray-400"
