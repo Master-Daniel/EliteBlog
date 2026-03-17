@@ -9,6 +9,8 @@ ENV="${1:-production}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 WEB_ROOT="${APP_ROOT}/dist"
+# Absolute path for Apache (no symlink ambiguity)
+WEB_ROOT_ABS="$(cd "${APP_ROOT}" && cd dist 2>/dev/null && pwd || echo "${WEB_ROOT}")"
 FRONTEND_DOMAIN="${FRONTEND_DOMAIN:-the-eliteblog.com}"
 BACKEND_API_DOMAIN="${BACKEND_API_DOMAIN:-api.the-eliteblog.com}"
 APACHE_SITE_ID="${APACHE_SITE_ID:-elite-blog-frontend}"
@@ -43,16 +45,18 @@ else
   npm run build
   echo "Build complete."
 fi
-echo "Serving from ${WEB_ROOT}"
+echo "Serving from ${WEB_ROOT} (absolute: ${WEB_ROOT_ABS})"
+
+# Require index.html so we don't configure Apache with an empty dir
+if [ ! -f "${WEB_ROOT}/index.html" ]; then
+  echo "ERROR: ${WEB_ROOT}/index.html not found. Deploy dist first (rsync from CI)."
+  exit 1
+fi
 
 # Ensure Apache can read dist and SPA routing works
-if [ -d "${WEB_ROOT}" ]; then
-  chmod -R o+rX "${WEB_ROOT}" 2>/dev/null || sudo chmod -R o+rX "${WEB_ROOT}"
-  if [ ! -f "${WEB_ROOT}/index.html" ]; then
-    echo "Warning: ${WEB_ROOT}/index.html not found. Check DocumentRoot and rsync."
-  else
-    # .htaccess fallback for SPA (in case FallbackResource in vhost is not applied)
-    cat > "${WEB_ROOT}/.htaccess" << 'HTACCESS'
+chmod -R o+rX "${WEB_ROOT}" 2>/dev/null || sudo chmod -R o+rX "${WEB_ROOT}"
+# .htaccess fallback for SPA (in case FallbackResource in vhost is not applied)
+cat > "${WEB_ROOT}/.htaccess" << 'HTACCESS'
 RewriteEngine On
 RewriteBase /
 RewriteRule ^index\.html$ - [L]
@@ -60,8 +64,6 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule . /index.html [L]
 HTACCESS
-  fi
-fi
 
 # Apache + certbot: single vhost file (80 + 443) serving from frontend/dist
 APACHE_CONF=""
@@ -83,8 +85,8 @@ else
 <VirtualHost *:80>
     ServerName ${FRONTEND_DOMAIN}
     ServerAlias *
-    DocumentRoot ${WEB_ROOT}
-    <Directory ${WEB_ROOT}>
+    DocumentRoot ${WEB_ROOT_ABS}
+    <Directory "${WEB_ROOT_ABS}">
         Options -Indexes +FollowSymLinks
         AllowOverride All
         Require all granted
@@ -102,7 +104,7 @@ APACHE_HTTP_ONLY
     sudo apachectl configtest 2>/dev/null && sudo systemctl reload httpd 2>/dev/null || true
 
     echo "Requesting certificate for ${FRONTEND_DOMAIN} with certbot (webroot)..."
-    sudo certbot certonly --webroot -w "${WEB_ROOT}" \
+    sudo certbot certonly --webroot -w "${WEB_ROOT_ABS}" \
       -d "${FRONTEND_DOMAIN}" --non-interactive --agree-tos -m "${CERTBOT_EMAIL}" || true
   fi
 
@@ -113,8 +115,8 @@ APACHE_HTTP_ONLY
 <VirtualHost *:80>
     ServerName ${FRONTEND_DOMAIN}
     ServerAlias *
-    DocumentRoot ${WEB_ROOT}
-    <Directory ${WEB_ROOT}>
+    DocumentRoot ${WEB_ROOT_ABS}
+    <Directory "${WEB_ROOT_ABS}">
         Options -Indexes +FollowSymLinks
         AllowOverride All
         Require all granted
@@ -125,8 +127,8 @@ APACHE_HTTP_ONLY
 <VirtualHost *:443>
     ServerName ${FRONTEND_DOMAIN}
     ServerAlias *
-    DocumentRoot ${WEB_ROOT}
-    <Directory ${WEB_ROOT}>
+    DocumentRoot ${WEB_ROOT_ABS}
+    <Directory "${WEB_ROOT_ABS}">
         Options -Indexes +FollowSymLinks
         AllowOverride All
         Require all granted
