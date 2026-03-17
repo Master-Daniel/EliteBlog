@@ -58,21 +58,23 @@ const TextEditor = forwardRef(({ onChange, initialContent }: TextEditorProps, re
     };
 
     return (
-        <Editor
-            tinymceScriptSrc="/tinymce.min.js"
-            onInit={(_, editor) => (editorRef.current = editor)}
-            onEditorChange={() => {
+        <div className="tinymce-editor-wrapper" style={{ minHeight: 520 }}>
+            <Editor
+                tinymceScriptSrc="/tinymce.min.js"
+                onInit={(_, editor) => (editorRef.current = editor)}
+                onLoadError={(e) => console.error("TinyMCE load error:", e)}
+                onEditorChange={() => {
                 if (editorRef.current) {
                     onChange(editorRef.current.getContent())
                 }
             }}
             initialValue={initialContent || "<p>Start creating something amazing...</p>"}
             init={{
-                base_url: baseUrl,
+                base_url: baseUrl || (typeof window !== "undefined" ? window.location.origin : ""),
                 skin: "silver",
-                skin_url: `${baseUrl}/themes/silver`,
+                skin_url: "/themes/silver",
                 icons: "default",
-                icons_url: `${baseUrl}/icons/default/icons.min.js`,
+                icons_url: "/icons/default/icons.min.js",
                 height: 500,
                 plugins:
                     'importword exportword exportpdf ai preview powerpaste casechange importcss searchreplace autolink autosave save directionality advcode visualblocks visualchars fullscreen image link math media mediaembed codesample table charmap pagebreak nonbreaking anchor tableofcontents insertdatetime advlist lists checklist wordcount tinymcespellchecker a11ychecker editimage help formatpainter permanentpen pageembed charmap quickbars linkchecker emoticons advtable footnotes mergetags autocorrect typography advtemplate markdown',
@@ -221,7 +223,8 @@ const TextEditor = forwardRef(({ onChange, initialContent }: TextEditorProps, re
                 content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
                 // images_upload_handler: handleImageUpload // Uncomment if image upload handler is provided
             }}
-        />
+            />
+        </div>
     );
 });
 
