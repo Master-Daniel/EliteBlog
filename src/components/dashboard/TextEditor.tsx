@@ -59,6 +59,7 @@ const TextEditor = forwardRef(({ onChange, initialContent }: TextEditorProps, re
 
     return (
         <Editor
+            tinymceScriptSrc="/tinymce.min.js"
             onInit={(_, editor) => (editorRef.current = editor)}
             onEditorChange={() => {
                 if (editorRef.current) {
