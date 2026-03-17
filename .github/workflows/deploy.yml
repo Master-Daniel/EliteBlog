@@ -8,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -17,25 +20,11 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-
-      - name: Cache node_modules
-        uses: actions/cache@v4
-        id: node-modules-cache
-        with:
-          path: node_modules
-          key: frontend-node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            frontend-node-modules-${{ runner.os }}-
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
         run: |
-          if [ -d node_modules ] && [ -f package-lock.json ]; then
-            echo "Restored node_modules from cache; syncing..."
-            npm install --legacy-peer-deps --prefer-offline --no-audit --no-fund
-          else
-            echo "Full install (legacy-peer-deps for React 19 / tinymce peer conflict)..."
-            npm install --legacy-peer-deps --no-audit --no-fund
-          fi
+          npm install --legacy-peer-deps --no-audit --no-fund
 
       - name: Build
         run: npm run build
@@ -50,7 +39,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-dist
-          path: dist/
+          path: frontend/dist/
 
       - name: Add SSH key for deploy (optional private deps)
         uses: webfactory/ssh-agent@v0.9.0
@@ -124,30 +113,83 @@ jobs:
 
       - name: Rsync dist to server
         run: |
-          DEST="${{ env.DEPLOY_PATH }}/${{ steps.frontend-path.outputs.subdir }}/dist"
-          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }}" \
-            ./frontend-dist/ \
-            ${{ secrets.USER }}@${{ secrets.SERVER_IP }}:${DEST}/
+          # Sync to both possible locations so script finds dist whether repo root or frontend/ subdir
+          for DEST in "${{ env.DEPLOY_PATH }}/dist" "${{ env.DEPLOY_PATH }}/frontend/dist"; do
+            rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }}" \
+              ./frontend-dist/ \
+              ${{ secrets.USER }}@${{ secrets.SERVER_IP }}:${DEST}/
+          done
 
       - name: Configure Apache and finish deploy
         env:
           FRONTEND_DOMAIN: ${{ secrets.FRONTEND_DOMAIN || 'the-eliteblog.com' }}
           BACKEND_API_DOMAIN: ${{ secrets.BACKEND_API_DOMAIN || 'api.the-eliteblog.com' }}
-          FRONTEND_SUBDIR: ${{ steps.frontend-path.outputs.subdir }}
         run: |
           ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} \
-            "DEPLOY_PATH=$DEPLOY_PATH FRONTEND_DOMAIN=$FRONTEND_DOMAIN BACKEND_API_DOMAIN=$BACKEND_API_DOMAIN SKIP_BUILD=1 FRONTEND_SUBDIR=$FRONTEND_SUBDIR bash -s" << 'EOF'
+            "DEPLOY_PATH=$DEPLOY_PATH FRONTEND_DOMAIN=$FRONTEND_DOMAIN BACKEND_API_DOMAIN=$BACKEND_API_DOMAIN SKIP_BUILD=1 bash -s" << 'EOF'
             set -e
-            APP_DIR="${DEPLOY_PATH}/${FRONTEND_SUBDIR}"
-            SCRIPT="${APP_DIR}/scripts/deploy-orchestrator.sh"
-            if [ -x "${SCRIPT}" ]; then
-              chmod +x "${SCRIPT}" 2>/dev/null || true
-              cd "${APP_DIR}" && export FRONTEND_DOMAIN BACKEND_API_DOMAIN SKIP_BUILD && ./scripts/deploy-orchestrator.sh production
-            elif [ -x "${DEPLOY_PATH}/scripts/deploy-orchestrator.sh" ]; then
-              chmod +x "${DEPLOY_PATH}/scripts/deploy-orchestrator.sh" 2>/dev/null || true
-              cd "${DEPLOY_PATH}" && export FRONTEND_DOMAIN BACKEND_API_DOMAIN SKIP_BUILD && ./scripts/deploy-orchestrator.sh production
-            else
-              echo "::warning::No deploy-orchestrator.sh found under ${APP_DIR}/scripts or ${DEPLOY_PATH}/scripts"
+            # Resolve which dist has index.html (we rsync to both)
+            WEB_ROOT_ABS=""
+            for D in "${DEPLOY_PATH}/dist" "${DEPLOY_PATH}/frontend/dist"; do
+              if [ -f "${D}/index.html" ]; then
+                WEB_ROOT_ABS="$(cd "${D}" && pwd)"
+                echo "Using dist: ${WEB_ROOT_ABS}"
+                break
+              fi
+            done
+            if [ -z "${WEB_ROOT_ABS}" ]; then
+              echo "::error::No index.html found in ${DEPLOY_PATH}/dist or ${DEPLOY_PATH}/frontend/dist. Rsync may have failed."
+              exit 1
             fi
+            # Ensure Apache can read and SPA routing works
+            chmod -R o+rX "${WEB_ROOT_ABS}" 2>/dev/null || sudo chmod -R o+rX "${WEB_ROOT_ABS}"
+            printf '%s\n' 'RewriteEngine On' 'RewriteBase /' 'RewriteRule ^index\.html$ - [L]' 'RewriteCond %{REQUEST_FILENAME} !-f' 'RewriteCond %{REQUEST_FILENAME} !-d' 'RewriteRule . /index.html [L]' > "${WEB_ROOT_ABS}/.htaccess"
+
+            # Try orchestrator script first; if missing, configure Apache inline so site still works
+            if [ -f "${DEPLOY_PATH}/frontend/scripts/deploy-orchestrator.sh" ]; then
+              SCRIPT="${DEPLOY_PATH}/frontend/scripts/deploy-orchestrator.sh"
+              APP_DIR="${DEPLOY_PATH}/frontend"
+              chmod +x "${SCRIPT}"
+              cd "${APP_DIR}" && export FRONTEND_DOMAIN BACKEND_API_DOMAIN SKIP_BUILD && ./scripts/deploy-orchestrator.sh production
+            elif [ -f "${DEPLOY_PATH}/scripts/deploy-orchestrator.sh" ]; then
+              SCRIPT="${DEPLOY_PATH}/scripts/deploy-orchestrator.sh"
+              APP_DIR="${DEPLOY_PATH}"
+              chmod +x "${SCRIPT}"
+              cd "${APP_DIR}" && export FRONTEND_DOMAIN BACKEND_API_DOMAIN SKIP_BUILD && ./scripts/deploy-orchestrator.sh production
+            else
+              echo "::warning::No deploy-orchestrator.sh found; configuring Apache from workflow (fallback)."
+              APACHE_SITE_ID="${APACHE_SITE_ID:-elite-blog-frontend}"
+              if [ -d /etc/apache2 ]; then
+                APACHE_CONF="/etc/apache2/sites-available/${APACHE_SITE_ID}.conf"
+              elif [ -d /etc/httpd ]; then
+                APACHE_CONF="/etc/httpd/conf.d/${APACHE_SITE_ID}.conf"
+              else
+                APACHE_CONF=""
+              fi
+              if [ -n "${APACHE_CONF}" ]; then
+                {
+                  echo '<VirtualHost *:80>'
+                  echo "    ServerName ${FRONTEND_DOMAIN}"
+                  echo "    DocumentRoot ${WEB_ROOT_ABS}"
+                  echo "    <Directory \"${WEB_ROOT_ABS}\">"
+                  echo '        Options -Indexes +FollowSymLinks'
+                  echo '        AllowOverride All'
+                  echo '        Require all granted'
+                  echo '        FallbackResource /index.html'
+                  echo '    </Directory>'
+                  echo '</VirtualHost>'
+                } | sudo tee "${APACHE_CONF}" >/dev/null
+                if [ -d /etc/apache2 ] && [ -x /usr/sbin/a2ensite ]; then
+                  sudo a2ensite "${APACHE_SITE_ID}" 2>/dev/null || true
+                  sudo a2dissite 000-default 2>/dev/null || true
+                  sudo a2enmod rewrite 2>/dev/null || true
+                fi
+                sudo apache2ctl configtest 2>/dev/null && sudo systemctl reload apache2 2>/dev/null || \
+                sudo apachectl configtest 2>/dev/null && sudo systemctl reload httpd 2>/dev/null || true
+              fi
+            fi
+            echo "--- Verifying deployment ---"
+            echo "OK: ${WEB_ROOT_ABS}/index.html"
+            ls -la "${WEB_ROOT_ABS}/" | head -5
             echo "Frontend deployment completed."
           EOF
