@@ -34,6 +34,7 @@ jobs:
         run: |
           cd ${{ steps.lockfile.outputs.wd }} && npm install --legacy-peer-deps --no-audit --no-fund
 
+      # Frontend only needs OAuth *client IDs* (public). Client *secrets* stay on the backend and must not be in the build.
       - name: Build
         run: cd ${{ steps.lockfile.outputs.wd }} && npm run build
         env:
@@ -41,7 +42,9 @@ jobs:
           VITE_FRONTEND_URL: https://${{ secrets.FRONTEND_DOMAIN || 'the-eliteblog.com' }}
           VITE_API_URL: https://${{ secrets.BACKEND_API_DOMAIN || 'api.the-eliteblog.com' }}
           VITE_BASE_URL: https://${{ secrets.BACKEND_API_DOMAIN || 'api.the-eliteblog.com' }}/api
+          VITE_GITHUB_CLIENT_ID: ${{ secrets.VITE_GITHUB_CLIENT_ID }}
           VITE_GITHUB_REDIRECT_URI: https://${{ secrets.BACKEND_API_DOMAIN || 'api.the-eliteblog.com' }}/api/auth/github/callback
+          VITE_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.VITE_GOOGLE_OAUTH_CLIENT_ID }}
 
       - name: Upload dist artifact
         uses: actions/upload-artifact@v4
