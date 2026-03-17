@@ -121,12 +121,10 @@ jobs:
 
       - name: Rsync dist to server
         run: |
-          # Sync to both possible locations so script finds dist whether repo root or frontend/ subdir
-          for DEST in "${{ env.DEPLOY_PATH }}/dist" "${{ env.DEPLOY_PATH }}/frontend/dist"; do
-            rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }}" \
-              ./frontend-dist/ \
-              ${{ secrets.USER }}@${{ secrets.SERVER_IP }}:${DEST}/
-          done
+          # DEPLOY_PATH is the frontend app root on the server; dist lives directly under it
+          rsync -avz --delete -e "ssh -o StrictHostKeyChecking=no -p ${{ secrets.SSH_PORT || 22 }}" \
+            ./frontend-dist/ \
+            ${{ secrets.USER }}@${{ secrets.SERVER_IP }}:${{ env.DEPLOY_PATH }}/dist/
 
       - name: Configure Apache and finish deploy
         env:
