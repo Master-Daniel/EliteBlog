@@ -12,6 +12,7 @@ import { Feed } from "../utils/types";
 import Comments from "../components/Comments";
 import BookmarkButton from "../components/BookmarkButton";
 import { calculateReadingTime, stripHtml } from "../utils/seo";
+import { sanitizeHtml } from "../utils/sanitizeHtml";
 
 const FeedBody: React.FC = () => {
     const params = useParams();
@@ -77,7 +78,7 @@ const FeedBody: React.FC = () => {
             <Header />
 
             {/* Scroll Progress Indicator */}
-            <div className="fixed top-[73px] left-0 right-0 h-1 bg-gray-200 dark:bg-gray-800 z-50">
+            <div className="fixed top-[73px] left-0 right-0 h-1 bg-gray-200 dark:bg-gray-800 z-40">
                 <div 
                     className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transition-all duration-150 ease-out"
                     style={{ width: `${scrollProgress}%` }}
@@ -150,8 +151,9 @@ const FeedBody: React.FC = () => {
                             className="feed-featured-image"
                         />
                     </div>
-                    <div className="prose sm:prose-lg max-w-none dark:prose-invert prose-figcaption:text-sm prose-figcaption:text-center prose-figcaption:mt-2 mt-16"
-                        dangerouslySetInnerHTML={{ __html: data?.content ?? "" }}
+                    <div
+                        className="prose sm:prose-lg max-w-none dark:prose-invert prose-figcaption:text-sm prose-figcaption:text-center prose-figcaption:mt-2 mt-16"
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(data?.content ?? "") }}
                     />
                     <div className="flex flex-wrap gap-3 mt-16">
                         {data && data?.tags.map((tag: string, index: number) => (
