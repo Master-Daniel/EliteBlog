@@ -14,6 +14,7 @@ import axiosInstance from "../../api/axiosConfig";
 import DataTableLoader from "../../components/DataTableLoader";
 import toast from "react-hot-toast";
 import usePageTitle from "../../hooks/usePageTitle";
+import { sanitizeHtml } from "../../utils/sanitizeHtml";
 
 
 interface Author {
@@ -314,7 +315,7 @@ const AdminPostApprovalPage: React.FC = () => {
                             {/* Content */}
                             <div 
                                 className="prose dark:prose-invert max-w-none"
-                                dangerouslySetInnerHTML={{ __html: previewPost.content }}
+                                dangerouslySetInnerHTML={{ __html: sanitizeHtml(previewPost.content) }}
                             />
                         </div>
 
