@@ -13,6 +13,7 @@ WEB_ROOT="${APP_ROOT}/dist"
 WEB_ROOT_ABS="$(cd "${APP_ROOT}" && cd dist 2>/dev/null && pwd || echo "${WEB_ROOT}")"
 FRONTEND_DOMAIN="${FRONTEND_DOMAIN:-the-eliteblog.com}"
 BACKEND_API_DOMAIN="${BACKEND_API_DOMAIN:-api.the-eliteblog.com}"
+BACKEND_PORT="${BACKEND_PORT:-3005}"
 APACHE_SITE_ID="${APACHE_SITE_ID:-elite-blog-frontend}"
 # Sentinel outside repo so Apache config runs only once; survives git clean
 SENTINEL="$(dirname "${APP_ROOT}")/.apache-blog-frontend-configured"
@@ -123,6 +124,17 @@ APACHE_HTTP_ONLY
         Require all granted
         FallbackResource /index.html
     </Directory>
+
+    # Proxy SEO endpoints to backend (dynamic sitemap/robots/rss)
+    ProxyPreserveHost On
+    ProxyPass /sitemap.xml http://127.0.0.1:${BACKEND_PORT}/sitemap.xml
+    ProxyPassReverse /sitemap.xml http://127.0.0.1:${BACKEND_PORT}/sitemap.xml
+    ProxyPass /robots.txt http://127.0.0.1:${BACKEND_PORT}/robots.txt
+    ProxyPassReverse /robots.txt http://127.0.0.1:${BACKEND_PORT}/robots.txt
+    ProxyPass /rss.xml http://127.0.0.1:${BACKEND_PORT}/rss.xml
+    ProxyPassReverse /rss.xml http://127.0.0.1:${BACKEND_PORT}/rss.xml
+    ProxyPass /feed.xml http://127.0.0.1:${BACKEND_PORT}/feed.xml
+    ProxyPassReverse /feed.xml http://127.0.0.1:${BACKEND_PORT}/feed.xml
 </VirtualHost>
 
 <VirtualHost *:443>
@@ -134,6 +146,17 @@ APACHE_HTTP_ONLY
         Require all granted
         FallbackResource /index.html
     </Directory>
+
+    # Proxy SEO endpoints to backend (dynamic sitemap/robots/rss)
+    ProxyPreserveHost On
+    ProxyPass /sitemap.xml http://127.0.0.1:${BACKEND_PORT}/sitemap.xml
+    ProxyPassReverse /sitemap.xml http://127.0.0.1:${BACKEND_PORT}/sitemap.xml
+    ProxyPass /robots.txt http://127.0.0.1:${BACKEND_PORT}/robots.txt
+    ProxyPassReverse /robots.txt http://127.0.0.1:${BACKEND_PORT}/robots.txt
+    ProxyPass /rss.xml http://127.0.0.1:${BACKEND_PORT}/rss.xml
+    ProxyPassReverse /rss.xml http://127.0.0.1:${BACKEND_PORT}/rss.xml
+    ProxyPass /feed.xml http://127.0.0.1:${BACKEND_PORT}/feed.xml
+    ProxyPassReverse /feed.xml http://127.0.0.1:${BACKEND_PORT}/feed.xml
 
     SSLEngine on
     SSLCertificateFile /etc/letsencrypt/live/${FRONTEND_DOMAIN}/fullchain.pem
@@ -148,7 +171,7 @@ APACHE_FULL
   if [ -d /etc/apache2 ] && [ -x /usr/sbin/a2ensite ]; then
     sudo a2ensite "${APACHE_SITE_ID}" 2>/dev/null || true
     sudo a2ensite 000-default 2>/dev/null || true
-    sudo a2enmod rewrite ssl 2>/dev/null || true
+    sudo a2enmod rewrite ssl proxy proxy_http 2>/dev/null || true
   fi
   sudo apache2ctl configtest 2>/dev/null && sudo systemctl reload apache2 2>/dev/null || \
   sudo apachectl configtest 2>/dev/null && sudo systemctl reload httpd 2>/dev/null || true
