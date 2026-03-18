@@ -25,6 +25,7 @@
     "axios": "^1.8.1",
     "axios-rate-limit": "^1.4.0",
     "child_process": "^1.0.2",
+    "dompurify": "^3.3.3",
     "esbuild": "^0.25.1",
     "formik": "^2.4.6",
     "fs": "^0.0.1-security",
@@ -48,6 +49,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
+    "@types/dompurify": "^3.0.5",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react-swc": "^3.8.0",
