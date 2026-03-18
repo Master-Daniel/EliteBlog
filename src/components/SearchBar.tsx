@@ -21,11 +21,25 @@ const SearchBar: React.FC<SearchBarProps> = ({ onClose }) => {
         feed.description.toLowerCase().includes(query.toLowerCase())
     );
 
-    // Function to highlight search term in text
+    const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    // Highlight search term safely (no HTML injection).
     const highlightText = (text: string) => {
         if (!query) return text;
-        const regex = new RegExp(`(${query})`, 'gi');
-        return text.replace(regex, `<span class="text-primary underline !important">$1</span>`);
+        const safeQuery = escapeRegExp(query);
+        const regex = new RegExp(`(${safeQuery})`, 'gi');
+        const parts = text.split(regex);
+
+        return parts.map((part, idx) => {
+            if (part.toLowerCase() === query.toLowerCase()) {
+                return (
+                    <span key={idx} className="text-primary underline">
+                        {part}
+                    </span>
+                );
+            }
+            return <React.Fragment key={idx}>{part}</React.Fragment>;
+        });
     };
 
     return (
@@ -60,8 +74,12 @@ const SearchBar: React.FC<SearchBarProps> = ({ onClose }) => {
                     {filteredPosts.length > 0 && (
                         filteredPosts.map(feed => (
                             <Link key={feed.slug} className="block px-4 py-4 hover:bg-gray-100 dark:hover:bg-white/5" to={`/feed/${feed.slug}`} onClick={onClose}>
-                                <h3 className="text-base mb-1 text-black dark:text-white" dangerouslySetInnerHTML={{ __html: highlightText(feed.title) }}></h3>
-                                <p className="text-sm text-gray-500" dangerouslySetInnerHTML={{ __html: highlightText(feed.description.substring(0, 100)) }}></p>
+                                <h3 className="text-base mb-1 text-black dark:text-white">
+                                    {highlightText(feed.title)}
+                                </h3>
+                                <p className="text-sm text-gray-500">
+                                    {highlightText(feed.description.substring(0, 100))}
+                                </p>
                             </Link>
                         ))
                     )}
