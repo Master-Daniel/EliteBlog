@@ -8,6 +8,7 @@ import { formatDate } from "../../utils/custom-functions";
 import { calculateReadingTime, stripHtml } from "../../utils/seo";
 import usePageTitle from "../../hooks/usePageTitle";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { sanitizeHtml } from "../../utils/sanitizeHtml";
 
 interface PostData {
     id: string;
@@ -177,7 +178,7 @@ const PreviewPost: React.FC = () => {
 
                                 <div
                                     className="prose prose-lg dark:prose-invert max-w-none"
-                                    dangerouslySetInnerHTML={{ __html: post.content }}
+                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }}
                                 />
 
                                 {post.tags && post.tags.length > 0 && (
