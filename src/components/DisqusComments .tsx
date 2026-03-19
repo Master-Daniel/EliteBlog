@@ -4,7 +4,7 @@ interface DisqusCommentProps { title: string, slug: string, description: string 
 
 const DisqusComments: React.FC<DisqusCommentProps> = ({ title, slug, description }) => {
     const _slug = encodeURIComponent(slug || "default-slug");
-    const url = `https://blog.elitecodec.com.ng/feed/${slug}`;
+    const url = `https://the-eliteblog.com/feed/${slug}`;
     const disqusSrc = `https://disqus.com/embed/comments/?base=default&f=vince-theme&t_i=${_slug}&t_u=${encodeURIComponent(
         url
     )}&t_e=${encodeURIComponent(title)}&t_d=${encodeURIComponent(description)}&t_t=${encodeURIComponent(title)}&s_o=popular#version=e0c4832edb67a23a7ccc1138f7876e1c`;
