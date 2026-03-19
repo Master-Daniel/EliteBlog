@@ -1,6 +1,6 @@
 export const SEO_CONFIG = {
     siteName: "EliteBlog",
-    siteUrl: import.meta.env.VITE_FRONTEND_URL || "https://elitecodec.com.ng",
+    siteUrl: import.meta.env.VITE_FRONTEND_URL || "https://the-eliteblog.com",
     defaultTitle: "EliteBlog - Tech, Programming & Lifestyle Blog",
     defaultDescription: "Discover insightful articles on technology, programming tutorials, web development, and lifestyle tips. Join our community of developers and tech enthusiasts.",
     defaultKeywords: ["tech blog", "programming tutorials", "web development", "software engineering", "coding tips", "javascript", "react", "nodejs", "lifestyle", "tech news"],
@@ -10,12 +10,12 @@ export const SEO_CONFIG = {
     themeColor: "#3b82f6",
     author: {
         name: "EliteBlog Team",
-        url: "https://elitecodec.com.ng",
+        url: "https://the-eliteblog.com",
     },
     organization: {
         name: "EliteCodec",
-        url: "https://elitecodec.com.ng",
-        logo: "https://elitecodec.com.ng/logo.png",
+        url: "https://the-eliteblog.com",
+        logo: "https://the-eliteblog.com/logo.png",
         sameAs: [
             "https://twitter.com/EliteCodec",
             "https://github.com/EliteCodec",
