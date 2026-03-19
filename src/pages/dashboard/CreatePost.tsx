@@ -164,7 +164,7 @@ const CreatePost: React.FC = () => {
                                         setFieldValue("slug", slug);
                                         setFieldValue(
                                             "canonicalUrl",
-                                            `https://elitecodec.com.ng/feed/${slug}`
+                                            `https://the-eliteblog.com/feed/${slug}`
                                         );
                                     }}
                                 />
