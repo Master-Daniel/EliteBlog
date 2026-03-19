@@ -177,7 +177,7 @@ const EditPost: React.FC = () => {
         description: post.description || "",
         keywords: Array.isArray(post.keywords) ? post.keywords : [],
         slug: post.slug || "",
-        canonicalUrl: post.slug ? `https://elitecodec.com.ng/feed/${post.slug}` : "",
+        canonicalUrl: post.slug ? `https://the-eliteblog.com/feed/${post.slug}` : "",
         schemaMarkup: post.schemaMarkup || "",
         category: post.category?.id || "",
         tags: Array.isArray(post.tags) ? post.tags : [],
@@ -240,7 +240,7 @@ const EditPost: React.FC = () => {
                                         setFieldValue("slug", slug);
                                         setFieldValue(
                                             "canonicalUrl",
-                                            `https://elitecodec.com.ng/feed/${slug}`
+                                            `https://the-eliteblog.com/feed/${slug}`
                                         );
                                     }}
                                 />
